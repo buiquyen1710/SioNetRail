@@ -1,0 +1,54 @@
+scene:
+  length_m: 1000.0
+  width_m: 200.0
+
+railway:
+  gauge_m: 1.435
+  rail_height_m: 0.18
+  rail_width_m: 0.075
+  sleeper_spacing_m: 0.6
+  sleeper_dimensions_m: [2.6, 0.28, 0.16]
+
+noise_barriers:
+  center_offset_m: 8.0
+  height_m: 3.5
+  thickness_m: 0.3
+
+catenary:
+  pole_spacing_m: 60.0
+  pole_height_m: 6.0
+  pole_offset_m: 4.5
+  pole_radius_m: 0.12
+  wire_height_m: 5.5
+  wire_radius_m: 0.018
+
+base_station:
+  position_m: [120.0, 18.0, 10.0]
+  height_m: 10.0
+  mast_radius_m: 0.22
+  antenna_size_m: [0.8, 0.25, 1.2]
+
+train:
+  receiver_height_m: 3.8
+  lateral_offset_m: 0.0
+
+simulation:
+  frequency_hz: 30000000000.0
+  train_speed_kmh: 350.0
+  timestep_s: 0.001
+  duration_s:
+
+ray_tracing:
+  max_depth: 3
+  max_num_paths: 100000
+  samples_per_src: 100000
+  enable_refraction: false
+
+paths:
+  blend_file: output/railway_scene.blend
+  mitsuba_xml: output/scene.xml
+  mesh_dir: output/meshes
+  trace_csv: output/ns3_trace.csv
+  doppler_plot: output/doppler_vs_time.png
+  path_count_plot: output/path_count_vs_time.png
+  scene_metadata: output/scene_metadata.json

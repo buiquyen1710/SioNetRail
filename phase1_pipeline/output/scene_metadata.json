@@ -1,0 +1,21 @@
+{
+  "track_centerline_start_m": [
+    -500.0,
+    0.0,
+    3.8
+  ],
+  "track_centerline_end_m": [
+    500.0,
+    0.0,
+    3.8
+  ],
+  "gnb_position_m": [
+    120.0,
+    18.0,
+    10.0
+  ],
+  "barrier_inner_planes_y_m": [
+    7.85,
+    -7.85
+  ]
+}
