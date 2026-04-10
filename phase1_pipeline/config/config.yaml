@@ -31,17 +31,28 @@ base_station:
 train:
   receiver_height_m: 3.8
   lateral_offset_m: 0.0
+  length_m: 25.0
+  width_m: 3.2
+  body_height_m: 3.6
+  nose_length_m: 4.0
+  bogie_offset_m: 7.0
+  wheel_radius_m: 0.42
+  wheel_width_m: 0.12
+  track_visual_offset_m: 0.7175
 
 simulation:
   frequency_hz: 30000000000.0
   train_speed_kmh: 350.0
   timestep_s: 0.001
+  scene_margin_m: 15.0
   duration_s:
 
 ray_tracing:
   max_depth: 3
-  max_num_paths: 100000
-  samples_per_src: 100000
+  max_num_paths: 2000
+  samples_per_src: 2000
+  solver_timestep_s: 0.5
+  include_train_in_rt_scene: false
   enable_refraction: false
 
 paths:

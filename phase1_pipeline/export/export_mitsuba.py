@@ -70,6 +70,12 @@ def export_object_to_obj(obj: bpy.types.Object, mesh_path: Path):
 def material_ref_id(material: bpy.types.Material | None) -> str:
     if material is None:
         return "mat-itu_concrete"
+    if material.name == "Ground":
+        return "mat-itu_concrete"
+    if "Window" in material.name or "Glass" in material.name:
+        return "mat-itu_glass"
+    if "Train" in material.name:
+        return "mat-itu_metal"
     bsdf_type = material.get("mitsuba_bsdf", "diffuse")
     if bsdf_type == "conductor":
         return "mat-itu_metal"
@@ -77,34 +83,16 @@ def material_ref_id(material: bpy.types.Material | None) -> str:
 
 
 def material_bsdf(material: bpy.types.Material | None, bsdf_id: str) -> ET.Element:
-    if material is None:
-        bsdf_type = "diffuse"
-        color = (0.7, 0.7, 0.7)
-    else:
-        bsdf_type = material.get("mitsuba_bsdf", "diffuse")
-        principled = material.node_tree.nodes.get("Principled BSDF") if material.use_nodes else None
-        rgba = principled.inputs["Base Color"].default_value if principled else (0.7, 0.7, 0.7, 1.0)
-        color = rgba[:3]
-
-    if bsdf_type == "conductor":
-        bsdf = ET.Element("bsdf", {"type": "roughconductor", "id": bsdf_id})
-        ET.SubElement(bsdf, "string", {"name": "material", "value": "none"})
-        ET.SubElement(bsdf, "rgb", {"name": "eta", "value": "0.2,0.92,1.1"})
-        ET.SubElement(bsdf, "rgb", {"name": "k", "value": "3.9,2.45,2.14"})
-        ET.SubElement(bsdf, "float", {"name": "alpha", "value": "0.15"})
-    else:
-        bsdf = ET.Element("bsdf", {"type": "diffuse", "id": bsdf_id})
-        ET.SubElement(
-            bsdf,
-            "rgb",
-            {"name": "reflectance", "value": f"{color[0]:.4f},{color[1]:.4f},{color[2]:.4f}"},
-        )
+    bsdf = ET.Element("bsdf", {"type": "diffuse", "id": bsdf_id})
     return bsdf
 
 
 def build_scene_xml(output_paths) -> ET.ElementTree:
     mesh_dir = output_paths["mesh_dir"]
+    xml_dir = output_paths["mitsuba_xml"].parent
     root = ET.Element("scene", {"version": "3.0.0"})
+    config = load_config(str(ROOT / "phase1_pipeline" / "config" / "config.yaml"))
+    include_train_in_rt_scene = bool(config.get("ray_tracing", {}).get("include_train_in_rt_scene", False))
 
     integrator = ET.SubElement(root, "integrator", {"type": "path"})
     ET.SubElement(integrator, "integer", {"name": "max_depth", "value": "8"})
@@ -125,15 +113,19 @@ def build_scene_xml(output_paths) -> ET.ElementTree:
     for obj in sorted(bpy.data.objects, key=lambda item: item.name):
         if obj.type not in {"MESH", "CURVE"}:
             continue
+        if not include_train_in_rt_scene and obj.name.startswith("Train"):
+            continue
         mesh_path = mesh_dir / f"{safe_name(obj.name)}.obj"
         export_object_to_obj(obj, mesh_path)
         bsdf_id = material_ref_id(obj.active_material)
         if bsdf_id not in declared_bsdfs:
             root.append(material_bsdf(obj.active_material, bsdf_id))
             declared_bsdfs.add(bsdf_id)
-        shape = ET.SubElement(root, "shape", {"type": "obj", "id": safe_name(obj.name)})
-        ET.SubElement(shape, "string", {"name": "filename", "value": str(mesh_path.as_posix())})
-        ET.SubElement(shape, "ref", {"id": bsdf_id})
+        shape = ET.SubElement(root, "shape", {"type": "obj", "id": f"mesh-{safe_name(obj.name)}"})
+        rel_mesh_path = mesh_path.relative_to(xml_dir)
+        ET.SubElement(shape, "string", {"name": "filename", "value": rel_mesh_path.as_posix()})
+        ET.SubElement(shape, "boolean", {"name": "face_normals", "value": "true"})
+        ET.SubElement(shape, "ref", {"id": bsdf_id, "name": "bsdf"})
 
     return ET.ElementTree(root)
 

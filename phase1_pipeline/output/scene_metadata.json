@@ -14,6 +14,16 @@
     18.0,
     10.0
   ],
+  "train_reference_position_m": [
+    -483.5,
+    0.0,
+    2.9400000000000004
+  ],
+  "train_dimensions_m": {
+    "length_m": 25.0,
+    "width_m": 3.2,
+    "body_height_m": 3.6
+  },
   "barrier_inner_planes_y_m": [
     7.85,
     -7.85

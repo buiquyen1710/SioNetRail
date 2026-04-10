@@ -213,6 +213,54 @@ def build_ground(config, collections, materials) -> None:
     link_to_collection(ground, collections["Ground"])
 
 
+def build_train(config, collections, materials) -> tuple[float, float, float]:
+    train_cfg = config.get("train", {})
+    length = float(train_cfg.get("length_m", 25.0))
+    width = float(train_cfg.get("width_m", 3.2))
+    body_height = float(train_cfg.get("body_height_m", 3.6))
+    nose_length = float(train_cfg.get("nose_length_m", 4.0))
+    bogie_offset = float(train_cfg.get("bogie_offset_m", 7.0))
+    wheel_radius = float(train_cfg.get("wheel_radius_m", 0.42))
+    wheel_width = float(train_cfg.get("wheel_width_m", 0.12))
+    x = -float(config["scene"]["length_m"]) / 2.0 + length / 2.0 + 4.0
+    y = float(train_cfg.get("lateral_offset_m", 0.0))
+    z = wheel_radius + body_height / 2.0
+
+    body = add_box("train_body", (length - nose_length, width, body_height), (x + nose_length / 2.0, y, z))
+    assign_material(body, materials["train_body"])
+    link_to_collection(body, collections["Train"])
+
+    nose = add_box("train_nose", (nose_length, width * 0.92, body_height * 0.86), (x - (length - nose_length) / 2.0, y, z + 0.08))
+    assign_material(nose, materials["train_body"])
+    link_to_collection(nose, collections["Train"])
+
+    roof = add_box("train_roof", (length * 0.74, width * 0.7, 0.28), (x + 0.8, y, z + body_height / 2.0 + 0.12))
+    assign_material(roof, materials["train_window"])
+    link_to_collection(roof, collections["Train"])
+
+    for idx, bogie_x in enumerate((x - bogie_offset, x + bogie_offset)):
+        bogie = add_box(f"train_bogie_{idx:02d}", (2.1, 2.4, 0.45), (bogie_x, y, wheel_radius + 0.25))
+        assign_material(bogie, materials["metal"])
+        link_to_collection(bogie, collections["Train"])
+        for side in (-1, 1):
+            for wheel_shift in (-0.7, 0.7):
+                bpy.ops.mesh.primitive_cylinder_add(
+                    radius=wheel_radius,
+                    depth=wheel_width,
+                    rotation=(math.pi / 2.0, 0.0, 0.0),
+                    location=(bogie_x + wheel_shift, y + side * 1.05, wheel_radius),
+                )
+                wheel = bpy.context.active_object
+                wheel.name = f"train_wheel_{idx}_{'l' if side < 0 else 'r'}_{0 if wheel_shift < 0 else 1}"
+                assign_material(wheel, materials["metal"])
+                link_to_collection(wheel, collections["Train"])
+
+    pantograph = add_box("train_pantograph", (1.0, 0.3, 1.0), (x + 2.5, y, z + body_height / 2.0 + 0.75))
+    assign_material(pantograph, materials["metal"])
+    link_to_collection(pantograph, collections["Train"])
+    return (x, y, z + body_height * 0.2)
+
+
 def configure_scene_units() -> None:
     scene = bpy.context.scene
     scene.unit_settings.system = "METRIC"
@@ -234,11 +282,14 @@ def main() -> None:
         "Barriers": ensure_collection("Barriers"),
         "Catenary": ensure_collection("Catenary"),
         "BaseStation": ensure_collection("BaseStation"),
+        "Train": ensure_collection("Train"),
     }
     materials = {
         "metal": create_principled_material("Metal", (0.55, 0.57, 0.6, 1.0), 0.95, 0.18, "conductor"),
         "concrete": create_principled_material("Concrete", (0.62, 0.62, 0.6, 1.0), 0.0, 0.75, "diffuse"),
         "ground": create_principled_material("Ground", (0.35, 0.4, 0.27, 1.0), 0.0, 0.95, "diffuse"),
+        "train_body": create_principled_material("TrainBody", (0.92, 0.94, 0.97, 1.0), 0.15, 0.32, "diffuse"),
+        "train_window": create_principled_material("TrainWindow", (0.16, 0.32, 0.52, 1.0), 0.35, 0.08, "diffuse"),
     }
 
     build_ground(config, collections, materials)
@@ -246,12 +297,19 @@ def main() -> None:
     build_barriers(config, collections, materials)
     build_catenary(config, collections, materials)
     gnb_position = build_base_station(config, collections, materials)
+    train_reference = build_train(config, collections, materials)
 
     bpy.ops.wm.save_as_mainfile(filepath=str(output_paths["blend_file"]))
     metadata = {
         "track_centerline_start_m": [-config["scene"]["length_m"] / 2.0, 0.0, config["train"]["receiver_height_m"]],
         "track_centerline_end_m": [config["scene"]["length_m"] / 2.0, 0.0, config["train"]["receiver_height_m"]],
         "gnb_position_m": list(gnb_position),
+        "train_reference_position_m": list(train_reference),
+        "train_dimensions_m": {
+            "length_m": config.get("train", {}).get("length_m", 25.0),
+            "width_m": config.get("train", {}).get("width_m", 3.2),
+            "body_height_m": config.get("train", {}).get("body_height_m", 3.6),
+        },
         "barrier_inner_planes_y_m": [
             config["noise_barriers"]["center_offset_m"] - config["noise_barriers"]["thickness_m"] / 2.0,
             -config["noise_barriers"]["center_offset_m"] + config["noise_barriers"]["thickness_m"] / 2.0,

@@ -5,13 +5,25 @@ import os
 import subprocess
 import sys
 from pathlib import Path
+from shutil import which
 
 from phase1_pipeline.common import load_config, repo_root, resolve_output_paths
 
 
+def safe_text(value: object) -> str:
+    encoding = getattr(sys.stdout, "encoding", None) or "utf-8"
+    return str(value).encode(encoding, errors="backslashreplace").decode(encoding, errors="replace")
+
+
 def run_command(command, cwd: Path) -> None:
-    print("Running:", " ".join(str(part) for part in command))
+    print("Running:", " ".join(safe_text(part) for part in command))
     subprocess.run(command, cwd=str(cwd), check=True)
+
+
+def blender_available(blender_executable: str) -> bool:
+    if Path(blender_executable).exists():
+        return True
+    return which(blender_executable) is not None
 
 
 def main() -> None:
@@ -35,7 +47,7 @@ def main() -> None:
     config = load_config(config_path)
     output_paths = resolve_output_paths(config)
 
-    if not args.skip_blender:
+    if not args.skip_blender and blender_available(args.blender_executable):
         run_command(
             [
                 args.blender_executable,
@@ -59,6 +71,12 @@ def main() -> None:
                 "--config",
                 str(config_path),
             ],
+            cwd=repo,
+        )
+    elif not args.skip_blender:
+        print("Blender executable not found. Falling back to direct Mitsuba scene export without .blend generation.")
+        run_command(
+            [sys.executable, "-m", "phase1_pipeline.export.export_mitsuba_fallback", "--config", str(config_path)],
             cwd=repo,
         )
 
