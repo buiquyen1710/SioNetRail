@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # High-Speed Railway Propagation Pipeline
 
 This project builds a complete automated pipeline for a 30 GHz outdoor railway scenario:
@@ -139,3 +140,7 @@ The CSV is streamed row by row, so the full trace does not need to be buffered i
 - Default carrier frequency is `30 GHz`.
 - Default timestep is `1 ms`.
 - If `duration_s` in [config.yaml](/C:/Users/QuYen/OneDrive - Hanoi University of Science and Technology/Documents/New project/phase1_pipeline/config/config.yaml) is left empty, the run spans the full 1000 m track.
+=======
+# SioNetRail
+Cross-layer 5G mmWave simulation for high-speed railways with ray tracing, ns-3, adaptive handover, and real-time digital twin visualization.
+>>>>>>> 8e80f4c045da0b20fd400da433c66f9434b0815e
