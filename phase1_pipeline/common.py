@@ -9,6 +9,9 @@ from typing import Any, Dict, Iterable, Tuple
 
 try:
     import yaml
+    print("DEBUG yaml object:", yaml)
+    print("DEBUG yaml file:", getattr(yaml, "__file__", "no file"))
+    print("DEBUG yaml has safe_load:", hasattr(yaml, "safe_load"))
 except ImportError as exc:  # pragma: no cover
     yaml = None
     YAML_IMPORT_ERROR = exc
@@ -36,6 +39,9 @@ def load_config(config_path: str | os.PathLike[str]) -> Dict[str, Any]:
 
     path = Path(config_path).resolve()
     with path.open("r", encoding="utf-8") as handle:
+        print("DEBUG before safe_load, yaml:", yaml)
+        print("DEBUG before safe_load, type(yaml):", type(yaml))
+        print("DEBUG before safe_load, has safe_load:", hasattr(yaml, "safe_load"))
         data = yaml.safe_load(handle)
     if not isinstance(data, dict):
         raise ValueError(f"Config at {path} did not parse as a mapping.")

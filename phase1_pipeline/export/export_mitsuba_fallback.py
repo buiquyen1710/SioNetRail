@@ -229,6 +229,14 @@ def build_scene(config: Dict, output_paths: Dict[str, Path]) -> None:
     dump_json(output_paths["scene_metadata"], metadata)
 
 
+# def parse_args() -> argparse.Namespace:
+#     parser = argparse.ArgumentParser(description="Export a Mitsuba scene directly from config without Blender.")
+#     parser.add_argument(
+#         "--config",
+#         default=str(Path(__file__).resolve().parents[2] / "phase1_pipeline" / "config" / "config.yaml"),
+#         help="Path to the pipeline YAML configuration file.",
+#     )
+#     return parser.parse_args()
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Export a Mitsuba scene directly from config without Blender.")
     parser.add_argument(
@@ -236,8 +244,14 @@ def parse_args() -> argparse.Namespace:
         default=str(Path(__file__).resolve().parents[2] / "phase1_pipeline" / "config" / "config.yaml"),
         help="Path to the pipeline YAML configuration file.",
     )
-    return parser.parse_args()
 
+    argv = sys.argv
+    if "--" in argv:
+        argv = argv[argv.index("--") + 1:]
+    else:
+        argv = []
+
+    return parser.parse_args(argv)
 
 def main() -> None:
     args = parse_args()

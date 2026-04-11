@@ -100,12 +100,59 @@ def ensure_drjit_llvm_path() -> None:
         return
     candidates = [
         Path("C:/Program Files/LLVM/bin/LLVM-C.dll"),
-        Path.home() / "anaconda3" / "envs" / "sionna-rt" / "Library" / "bin" / "LLVM-C.dll",
+        Path("C:/Program Files (x86)/LLVM/bin/LLVM-C.dll"),
     ]
+    python_prefix = Path(sys.executable).resolve().parent
+    candidates.extend(
+        [
+            python_prefix / "Library" / "bin" / "LLVM-C.dll",
+            python_prefix / "lib" / "LLVM-C.dll",
+        ]
+    )
+    conda_prefix = os.environ.get("CONDA_PREFIX")
+    if conda_prefix:
+        candidates.append(Path(conda_prefix) / "Library" / "bin" / "LLVM-C.dll")
+
     for candidate in candidates:
         if candidate.exists():
             os.environ["DRJIT_LIBLLVM_PATH"] = str(candidate)
             return
+
+    # Search more thoroughly under Python/Conda prefixes if no candidate was found.
+    search_roots = [python_prefix]
+    if conda_prefix:
+        search_roots.append(Path(conda_prefix))
+    for root in search_roots:
+        if not root.exists():
+            continue
+        for candidate in root.rglob("LLVM-C.dll"):
+            os.environ["DRJIT_LIBLLVM_PATH"] = str(candidate)
+            return
+
+    print(
+        "Warning: LLVM shared library not found.\n"
+        "Please install LLVM or set DRJIT_LIBLLVM_PATH to the full path of LLVM-C.dll.\n"
+        "Tried candidates:\n" + "\n".join(str(candidate) for candidate in candidates),
+        file=sys.stderr,
+    )
+
+    # Search the current Python prefix and conda prefix if present.
+    search_roots = [python_prefix]
+    if conda_prefix:
+        search_roots.append(Path(conda_prefix))
+
+    for root in search_roots:
+        if root.exists():
+            for candidate in root.rglob("LLVM-C.dll"):
+                os.environ["DRJIT_LIBLLVM_PATH"] = str(candidate)
+                return
+
+    print(
+        "Warning: LLVM shared library not found.\n"
+        "Please install LLVM or set DRJIT_LIBLLVM_PATH to the full path of LLVM-C.dll.\n"
+        "Tried candidates:\n" + "\n".join(str(candidate) for candidate in candidates),
+        file=sys.stderr,
+    )
 
 
 @dataclass
