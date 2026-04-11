@@ -589,6 +589,9 @@ def export_snapshot_visualizations(config: Dict, output_paths: Dict, snapshot_da
     for key, data in snapshot_data.items():
         time_s = float(data["time_s"])
         visual_paths = fallback_visual_paths.get(round(time_s, 9), data["paths"])
+        actual_path_count = len(data["paths"])
+        if actual_path_count > 0 and visual_paths and len(visual_paths) != actual_path_count:
+            visual_paths = sorted(visual_paths, key=lambda item: abs(item.coefficient), reverse=True)[:actual_path_count]
         if not visual_paths:
             continue
 
@@ -650,6 +653,21 @@ def _append_rows(writer: TraceCsvWriter, time_s: float, extracted: List[Candidat
     }
 
 
+def recover_missing_los(config: Dict, rx_pos: Tuple[float, float, float], extracted: List[CandidatePath]) -> List[CandidatePath]:
+    barrier_cfg = config["noise_barriers"]
+    barrier_center = float(barrier_cfg["center_offset_m"])
+    barrier_thickness = float(barrier_cfg["thickness_m"])
+    barrier_height = float(barrier_cfg["height_m"])
+    tx_pos = tx_position(config)
+    los_should_exist = los_clears_barriers(tx_pos, rx_pos, barrier_center, barrier_thickness, barrier_height)
+    has_los = any(path.los_flag == 1 for path in extracted)
+    if los_should_exist and not has_los:
+        extracted = list(extracted) + [
+            build_candidate_from_points("los_recovered", [tx_pos, rx_pos], complex(1.0, 0.0), config, 1)
+        ]
+    return sorted(extracted, key=lambda item: (item.delay_s, -abs(item.coefficient)))
+
+
 def run_sionna_backend(config: Dict, output_paths: Dict) -> List[Dict[str, float]]:
     imports = try_import_sionna()
     if imports is None:
@@ -697,7 +715,8 @@ def run_sionna_backend(config: Dict, output_paths: Dict) -> List[Dict[str, float
     snapshot_data: Dict[str, Dict] = {}
     with TraceCsvWriter(output_paths["trace_csv"]) as writer:
         for step_idx, time_s in simulation_times(config, timestep_s=solver_timestep):
-            rx.position = mi.Point3f(*rx_position_for_time(config, time_s))
+            rx_pos = rx_position_for_time(config, time_s)
+            rx.position = mi.Point3f(*rx_pos)
             tx.look_at(rx)
             rx.look_at(tx)
             paths = solver(
@@ -713,14 +732,15 @@ def run_sionna_backend(config: Dict, output_paths: Dict) -> List[Dict[str, float
                 diffraction=False,
             )
             extracted = extract_sionna_paths(paths, config)
+            extracted = recover_missing_los(config, rx_pos, extracted)
             summary_point = _append_rows(writer, time_s, extracted)
             summary.append(summary_point)
 
             if step_idx == 0:
-                snapshot_data["start"] = {"time_s": time_s, "rx_pos": rx_position_for_time(config, time_s), "paths": extracted}
+                snapshot_data["start"] = {"time_s": time_s, "rx_pos": rx_pos, "paths": extracted}
             if step_idx == mid_step:
-                snapshot_data["mid"] = {"time_s": time_s, "rx_pos": rx_position_for_time(config, time_s), "paths": extracted}
-            snapshot_data["end"] = {"time_s": time_s, "rx_pos": rx_position_for_time(config, time_s), "paths": extracted}
+                snapshot_data["mid"] = {"time_s": time_s, "rx_pos": rx_pos, "paths": extracted}
+            snapshot_data["end"] = {"time_s": time_s, "rx_pos": rx_pos, "paths": extracted}
 
     export_snapshot_visualizations(config, output_paths, snapshot_data)
     return summary
