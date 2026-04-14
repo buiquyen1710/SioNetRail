@@ -126,13 +126,13 @@
     <boolean name="face_normals" value="true" />
     <ref id="mat-itu_metal" name="bsdf" />
   </shape>
-  <shape type="obj" id="mesh-gnb_mast">
-    <string name="filename" value="meshes/gnb_mast.obj" />
+  <shape type="obj" id="mesh-gnb_0_mast">
+    <string name="filename" value="meshes/gnb_0_mast.obj" />
     <boolean name="face_normals" value="true" />
     <ref id="mat-itu_metal" name="bsdf" />
   </shape>
-  <shape type="obj" id="mesh-gnb_antenna">
-    <string name="filename" value="meshes/gnb_antenna.obj" />
+  <shape type="obj" id="mesh-gnb_0_antenna">
+    <string name="filename" value="meshes/gnb_0_antenna.obj" />
     <boolean name="face_normals" value="true" />
     <ref id="mat-itu_metal" name="bsdf" />
   </shape>

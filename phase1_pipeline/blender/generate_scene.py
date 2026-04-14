@@ -12,6 +12,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from phase1_pipeline.common import dump_json, load_config, resolve_output_paths
+from phase1_pipeline.scenarios import active_base_station, all_base_stations, is_tunnel_scenario
 
 
 def parse_args() -> argparse.Namespace:
@@ -19,7 +20,7 @@ def parse_args() -> argparse.Namespace:
     if "--" in argv:
         argv = argv[argv.index("--") + 1 :]
     else:
-        argv = []
+        argv = argv[1:]
     parser = argparse.ArgumentParser(description="Generate the railway scene in Blender.")
     parser.add_argument(
         "--config",
@@ -80,6 +81,16 @@ def add_box(name: str, size, location) -> bpy.types.Object:
     return obj
 
 
+def facing_offset(facing: str, distance: float) -> tuple[float, float, float]:
+    mapping = {
+        "x+": (distance, 0.0, 0.0),
+        "x-": (-distance, 0.0, 0.0),
+        "y+": (0.0, distance, 0.0),
+        "y-": (0.0, -distance, 0.0),
+    }
+    return mapping.get(facing, (0.0, -distance, 0.0))
+
+
 def build_track(config, collections, materials) -> None:
     scene_cfg = config["scene"]
     track_cfg = config["railway"]
@@ -123,6 +134,45 @@ def build_barriers(config, collections, materials) -> None:
         barrier = add_box(f"barrier_{suffix}", (length, thickness, height), (0.0, y, height / 2.0))
         assign_material(barrier, materials["concrete"])
         link_to_collection(barrier, collections["Barriers"])
+
+
+def build_tunnel(config, collections, materials) -> None:
+    tunnel_cfg = config["tunnel"]
+    tunnel_length = float(tunnel_cfg["length_m"])
+    tunnel_width = float(tunnel_cfg["inner_width_m"])
+    tunnel_height = float(tunnel_cfg["inner_height_m"])
+    wall_thickness = float(tunnel_cfg.get("wall_thickness_m", 0.35))
+    tunnel_center_x = float(tunnel_cfg.get("center_x_m", 0.0))
+
+    floor = add_box("tunnel_floor", (tunnel_length + wall_thickness * 2.0, tunnel_width + wall_thickness * 2.0, wall_thickness), (tunnel_center_x, 0.0, -wall_thickness / 2.0))
+    assign_material(floor, materials["concrete"])
+    link_to_collection(floor, collections["Tunnel"])
+
+    for suffix, y in (("north", tunnel_width / 2.0 + wall_thickness / 2.0), ("south", -tunnel_width / 2.0 - wall_thickness / 2.0)):
+        wall = add_box(
+            f"tunnel_wall_{suffix}",
+            (tunnel_length, wall_thickness, tunnel_height),
+            (tunnel_center_x, y, tunnel_height / 2.0),
+        )
+        assign_material(wall, materials["concrete"])
+        link_to_collection(wall, collections["Tunnel"])
+
+    roof = add_box(
+        "tunnel_roof",
+        (tunnel_length, tunnel_width + wall_thickness * 2.0, wall_thickness),
+        (tunnel_center_x, 0.0, tunnel_height + wall_thickness / 2.0),
+    )
+    assign_material(roof, materials["concrete"])
+    link_to_collection(roof, collections["Tunnel"])
+
+    for suffix, x in (("west", tunnel_center_x - tunnel_length / 2.0), ("east", tunnel_center_x + tunnel_length / 2.0)):
+        frame = add_box(
+            f"portal_frame_{suffix}",
+            (wall_thickness, tunnel_width + wall_thickness * 2.0, tunnel_height + wall_thickness),
+            (x, 0.0, tunnel_height / 2.0),
+        )
+        assign_material(frame, materials["concrete"])
+        link_to_collection(frame, collections["Tunnel"])
 
 
 def build_catenary(config, collections, materials) -> None:
@@ -181,24 +231,36 @@ def build_catenary(config, collections, materials) -> None:
     link_to_collection(messenger, collections["Catenary"])
 
 
-def build_base_station(config, collections, materials):
-    gnb_cfg = config["base_station"]
-    x, y, z = map(float, gnb_cfg["position_m"])
-    mast_height = float(gnb_cfg["height_m"])
-    mast_radius = float(gnb_cfg["mast_radius_m"])
-    antenna_size = tuple(float(v) for v in gnb_cfg["antenna_size_m"])
+def build_base_stations(config, collections, materials):
+    stations = []
+    for idx, gnb_cfg in enumerate(all_base_stations(config)):
+        x, y, z = map(float, gnb_cfg["position_m"])
+        mast_height = float(gnb_cfg["height_m"])
+        mast_radius = float(gnb_cfg["mast_radius_m"])
+        antenna_size = tuple(float(v) for v in gnb_cfg["antenna_size_m"])
+        facing = str(gnb_cfg.get("facing", "y-"))
+        label = str(gnb_cfg.get("name", f"gnb_{idx}"))
 
-    bpy.ops.mesh.primitive_cylinder_add(radius=mast_radius, depth=mast_height, location=(x, y, mast_height / 2.0))
-    mast = bpy.context.active_object
-    mast.name = "gnb_mast"
-    assign_material(mast, materials["metal"])
-    link_to_collection(mast, collections["BaseStation"])
+        bpy.ops.mesh.primitive_cylinder_add(radius=mast_radius, depth=mast_height, location=(x, y, mast_height / 2.0))
+        mast = bpy.context.active_object
+        mast.name = f"{label}_mast"
+        assign_material(mast, materials["metal"])
+        link_to_collection(mast, collections["BaseStation"])
 
-    antenna = add_box("gnb_antenna", antenna_size, (x, y - antenna_size[1] / 2.0, z))
-    antenna.rotation_euler = (0.0, 0.0, math.pi)
-    assign_material(antenna, materials["metal"])
-    link_to_collection(antenna, collections["BaseStation"])
-    return (x, y, z)
+        dx, dy, dz = facing_offset(facing, antenna_size[1] / 2.0)
+        antenna = add_box(f"{label}_antenna", antenna_size, (x + dx, y + dy, z + dz))
+        if facing == "y+":
+            antenna.rotation_euler = (0.0, 0.0, 0.0)
+        elif facing == "x+":
+            antenna.rotation_euler = (0.0, 0.0, -math.pi / 2.0)
+        elif facing == "x-":
+            antenna.rotation_euler = (0.0, 0.0, math.pi / 2.0)
+        else:
+            antenna.rotation_euler = (0.0, 0.0, math.pi)
+        assign_material(antenna, materials["metal"])
+        link_to_collection(antenna, collections["BaseStation"])
+        stations.append((x, y, z))
+    return stations
 
 
 def build_ground(config, collections, materials) -> None:
@@ -283,6 +345,7 @@ def main() -> None:
         "Catenary": ensure_collection("Catenary"),
         "BaseStation": ensure_collection("BaseStation"),
         "Train": ensure_collection("Train"),
+        "Tunnel": ensure_collection("Tunnel"),
     }
     materials = {
         "metal": create_principled_material("Metal", (0.55, 0.57, 0.6, 1.0), 0.95, 0.18, "conductor"),
@@ -292,29 +355,41 @@ def main() -> None:
         "train_window": create_principled_material("TrainWindow", (0.16, 0.32, 0.52, 1.0), 0.35, 0.08, "diffuse"),
     }
 
-    build_ground(config, collections, materials)
+    if not is_tunnel_scenario(config):
+        build_ground(config, collections, materials)
     build_track(config, collections, materials)
-    build_barriers(config, collections, materials)
-    build_catenary(config, collections, materials)
-    gnb_position = build_base_station(config, collections, materials)
+    if is_tunnel_scenario(config):
+        build_tunnel(config, collections, materials)
+    else:
+        build_barriers(config, collections, materials)
+        build_catenary(config, collections, materials)
+    gnb_positions = build_base_stations(config, collections, materials)
     train_reference = build_train(config, collections, materials)
 
     bpy.ops.wm.save_as_mainfile(filepath=str(output_paths["blend_file"]))
     metadata = {
         "track_centerline_start_m": [-config["scene"]["length_m"] / 2.0, 0.0, config["train"]["receiver_height_m"]],
         "track_centerline_end_m": [config["scene"]["length_m"] / 2.0, 0.0, config["train"]["receiver_height_m"]],
-        "gnb_position_m": list(gnb_position),
+        "gnb_position_m": list(active_base_station(config)["position_m"]),
+        "all_gnb_positions_m": [list(pos) for pos in gnb_positions],
         "train_reference_position_m": list(train_reference),
         "train_dimensions_m": {
             "length_m": config.get("train", {}).get("length_m", 25.0),
             "width_m": config.get("train", {}).get("width_m", 3.2),
             "body_height_m": config.get("train", {}).get("body_height_m", 3.6),
         },
-        "barrier_inner_planes_y_m": [
+    }
+    if is_tunnel_scenario(config):
+        metadata["tunnel_inner_planes_y_m"] = [
             config["noise_barriers"]["center_offset_m"] - config["noise_barriers"]["thickness_m"] / 2.0,
             -config["noise_barriers"]["center_offset_m"] + config["noise_barriers"]["thickness_m"] / 2.0,
-        ],
-    }
+        ]
+        metadata["tunnel_height_m"] = config["tunnel"]["inner_height_m"]
+    else:
+        metadata["barrier_inner_planes_y_m"] = [
+            config["noise_barriers"]["center_offset_m"] - config["noise_barriers"]["thickness_m"] / 2.0,
+            -config["noise_barriers"]["center_offset_m"] + config["noise_barriers"]["thickness_m"] / 2.0,
+        ]
     dump_json(output_paths["scene_metadata"], metadata)
     print(f"Saved Blender scene to {output_paths['blend_file']}")
     print(f"Saved scene metadata to {output_paths['scene_metadata']}")

@@ -10,15 +10,20 @@
     3.8
   ],
   "gnb_position_m": [
-    120.0,
-    18.0,
-    10.0
+    -435.0,
+    0.0,
+    8.5
   ],
   "all_gnb_positions_m": [
     [
-      120.0,
-      18.0,
-      10.0
+      -435.0,
+      0.0,
+      8.5
+    ],
+    [
+      435.0,
+      0.0,
+      8.5
     ]
   ],
   "train_reference_position_m": [
@@ -31,8 +36,9 @@
     "width_m": 3.2,
     "body_height_m": 3.6
   },
-  "barrier_inner_planes_y_m": [
-    7.85,
-    -7.85
-  ]
+  "tunnel_inner_planes_y_m": [
+    4.825,
+    -4.825
+  ],
+  "tunnel_height_m": 7.5
 }

@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Dict, Iterable, List, Tuple
 
 from phase1_pipeline.common import dump_json, ensure_parent, load_config, resolve_output_paths
+from phase1_pipeline.scenarios import active_base_station, all_base_stations, is_tunnel_scenario
 
 
 def safe_text(value: object) -> str:
@@ -101,14 +102,42 @@ def add_shape(root: ET.Element, shape_id: str, filename: Path, bsdf_id: str, xml
     ET.SubElement(shape, "ref", {"id": bsdf_id, "name": "bsdf"})
 
 
+def facing_offset(facing: str, distance: float) -> Tuple[float, float, float]:
+    mapping = {
+        "x+": (distance, 0.0, 0.0),
+        "x-": (-distance, 0.0, 0.0),
+        "y+": (0.0, distance, 0.0),
+        "y-": (0.0, -distance, 0.0),
+    }
+    return mapping.get(facing, (0.0, -distance, 0.0))
+
+
+def append_base_station_objects(config: Dict, mesh_dir: Path, objects: List[Tuple[str, Path, str]]) -> List[Tuple[float, float, float]]:
+    stations = []
+    for idx, gnb_cfg in enumerate(all_base_stations(config)):
+        label = safe_name(str(gnb_cfg.get("name", f"gnb_{idx}")))
+        mast_x, mast_y, mast_z = [float(v) for v in gnb_cfg["position_m"]]
+        mast_path = mesh_dir / f"{label}_mast.obj"
+        verts, faces = cylinder_vertices((mast_x, mast_y, float(gnb_cfg["height_m"]) / 2.0), float(gnb_cfg["mast_radius_m"]), float(gnb_cfg["height_m"]), axis="z")
+        write_obj(mast_path, verts, faces)
+        objects.append((f"{label}_mast", mast_path, "mat-itu_metal"))
+
+        antenna_path = mesh_dir / f"{label}_antenna.obj"
+        antenna_size = tuple(float(v) for v in gnb_cfg["antenna_size_m"])
+        dx, dy, dz = facing_offset(str(gnb_cfg.get("facing", "y-")), antenna_size[1] / 2.0)
+        verts, faces = box_vertices((mast_x + dx, mast_y + dy, mast_z + dz), antenna_size)
+        write_obj(antenna_path, verts, faces)
+        objects.append((f"{label}_antenna", antenna_path, "mat-itu_metal"))
+        stations.append((mast_x, mast_y, mast_z))
+    return stations
+
+
 def build_scene(config: Dict, output_paths: Dict[str, Path]) -> None:
     mesh_dir = output_paths["mesh_dir"]
     scene_cfg = config["scene"]
     rail_cfg = config["railway"]
     barrier_cfg = config["noise_barriers"]
-    catenary_cfg = config["catenary"]
     train_cfg = config["train"]
-    gnb_cfg = config["base_station"]
     include_train_in_rt_scene = bool(config.get("ray_tracing", {}).get("include_train_in_rt_scene", False))
 
     length = float(scene_cfg["length_m"])
@@ -122,10 +151,11 @@ def build_scene(config: Dict, output_paths: Dict[str, Path]) -> None:
 
     objects = []
 
-    ground_path = mesh_dir / "ground.obj"
-    verts, faces = box_vertices((0.0, 0.0, -0.05), (length, width, 0.1))
-    write_obj(ground_path, verts, faces)
-    objects.append(("ground", ground_path, "mat-itu_concrete"))
+    if not is_tunnel_scenario(config):
+        ground_path = mesh_dir / "ground.obj"
+        verts, faces = box_vertices((0.0, 0.0, -0.05), (length, width, 0.1))
+        write_obj(ground_path, verts, faces)
+        objects.append(("ground", ground_path, "mat-itu_concrete"))
 
     rail_half = gauge / 2.0
     for suffix, y in (("left", rail_half), ("right", -rail_half)):
@@ -140,29 +170,41 @@ def build_scene(config: Dict, output_paths: Dict[str, Path]) -> None:
         write_obj(path, verts, faces)
         objects.append((f"barrier_{suffix}", path, "mat-itu_concrete"))
 
-    pole_spacing = float(catenary_cfg["pole_spacing_m"])
-    pole_height = float(catenary_cfg["pole_height_m"])
-    pole_offset = float(catenary_cfg["pole_offset_m"])
-    pole_radius = float(catenary_cfg["pole_radius_m"])
-    pole_count = int(length / pole_spacing) + 1
-    for idx in range(pole_count):
-        x = -length / 2.0 + idx * pole_spacing
-        path = mesh_dir / f"catenary_pole_{idx:03d}.obj"
-        verts, faces = cylinder_vertices((x, pole_offset, pole_height / 2.0), pole_radius, pole_height, axis="z")
-        write_obj(path, verts, faces)
-        objects.append((f"catenary_pole_{idx:03d}", path, "mat-itu_metal"))
+    if is_tunnel_scenario(config):
+        tunnel_cfg = config["tunnel"]
+        inner_width = float(tunnel_cfg["inner_width_m"])
+        inner_height = float(tunnel_cfg["inner_height_m"])
+        wall_thickness = float(tunnel_cfg.get("wall_thickness_m", 0.35))
+        tunnel_length = float(tunnel_cfg["length_m"])
+        tunnel_center_x = float(tunnel_cfg.get("center_x_m", 0.0))
+        floor_path = mesh_dir / "tunnel_floor.obj"
+        verts, faces = box_vertices((tunnel_center_x, 0.0, -wall_thickness / 2.0), (tunnel_length + wall_thickness * 2.0, inner_width + wall_thickness * 2.0, wall_thickness))
+        write_obj(floor_path, verts, faces)
+        objects.append(("tunnel_floor", floor_path, "mat-itu_concrete"))
+        for suffix, y in (("north", inner_width / 2.0 + wall_thickness / 2.0), ("south", -inner_width / 2.0 - wall_thickness / 2.0)):
+            path = mesh_dir / f"tunnel_wall_{suffix}.obj"
+            verts, faces = box_vertices((tunnel_center_x, y, inner_height / 2.0), (tunnel_length, wall_thickness, inner_height))
+            write_obj(path, verts, faces)
+            objects.append((f"tunnel_wall_{suffix}", path, "mat-itu_concrete"))
+        roof_path = mesh_dir / "tunnel_roof.obj"
+        verts, faces = box_vertices((tunnel_center_x, 0.0, inner_height + wall_thickness / 2.0), (tunnel_length, inner_width + wall_thickness * 2.0, wall_thickness))
+        write_obj(roof_path, verts, faces)
+        objects.append(("tunnel_roof", roof_path, "mat-itu_concrete"))
+    else:
+        catenary_cfg = config["catenary"]
+        pole_spacing = float(catenary_cfg["pole_spacing_m"])
+        pole_height = float(catenary_cfg["pole_height_m"])
+        pole_offset = float(catenary_cfg["pole_offset_m"])
+        pole_radius = float(catenary_cfg["pole_radius_m"])
+        pole_count = int(length / pole_spacing) + 1
+        for idx in range(pole_count):
+            x = -length / 2.0 + idx * pole_spacing
+            path = mesh_dir / f"catenary_pole_{idx:03d}.obj"
+            verts, faces = cylinder_vertices((x, pole_offset, pole_height / 2.0), pole_radius, pole_height, axis="z")
+            write_obj(path, verts, faces)
+            objects.append((f"catenary_pole_{idx:03d}", path, "mat-itu_metal"))
 
-    mast_x, mast_y, mast_z = [float(v) for v in gnb_cfg["position_m"]]
-    mast_path = mesh_dir / "gnb_mast.obj"
-    verts, faces = cylinder_vertices((mast_x, mast_y, float(gnb_cfg["height_m"]) / 2.0), float(gnb_cfg["mast_radius_m"]), float(gnb_cfg["height_m"]), axis="z")
-    write_obj(mast_path, verts, faces)
-    objects.append(("gnb_mast", mast_path, "mat-itu_metal"))
-
-    antenna_path = mesh_dir / "gnb_antenna.obj"
-    antenna_size = tuple(float(v) for v in gnb_cfg["antenna_size_m"])
-    verts, faces = box_vertices((mast_x, mast_y - antenna_size[1] / 2.0, mast_z), antenna_size)
-    write_obj(antenna_path, verts, faces)
-    objects.append(("gnb_antenna", antenna_path, "mat-itu_metal"))
+    gnb_positions = append_base_station_objects(config, mesh_dir, objects)
 
     train_length = float(train_cfg.get("length_m", 25.0))
     train_width = float(train_cfg.get("width_m", 3.2))
@@ -214,18 +256,26 @@ def build_scene(config: Dict, output_paths: Dict[str, Path]) -> None:
     metadata = {
         "track_centerline_start_m": [-config["scene"]["length_m"] / 2.0, 0.0, config["train"]["receiver_height_m"]],
         "track_centerline_end_m": [config["scene"]["length_m"] / 2.0, 0.0, config["train"]["receiver_height_m"]],
-        "gnb_position_m": list(gnb_cfg["position_m"]),
+        "gnb_position_m": list(active_base_station(config)["position_m"]),
+        "all_gnb_positions_m": [list(pos) for pos in gnb_positions],
         "train_reference_position_m": [x, y, z + train_height * 0.2],
         "train_dimensions_m": {
             "length_m": train_length,
             "width_m": train_width,
             "body_height_m": train_height,
         },
-        "barrier_inner_planes_y_m": [
+    }
+    if is_tunnel_scenario(config):
+        metadata["tunnel_inner_planes_y_m"] = [
             barrier_offset - barrier_thickness / 2.0,
             -barrier_offset + barrier_thickness / 2.0,
-        ],
-    }
+        ]
+        metadata["tunnel_height_m"] = config["tunnel"]["inner_height_m"]
+    else:
+        metadata["barrier_inner_planes_y_m"] = [
+            barrier_offset - barrier_thickness / 2.0,
+            -barrier_offset + barrier_thickness / 2.0,
+        ]
     dump_json(output_paths["scene_metadata"], metadata)
 
 
@@ -249,7 +299,7 @@ def parse_args() -> argparse.Namespace:
     if "--" in argv:
         argv = argv[argv.index("--") + 1:]
     else:
-        argv = []
+        argv = argv[1:]
 
     return parser.parse_args(argv)
 

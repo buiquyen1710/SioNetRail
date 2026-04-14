@@ -1,0 +1,79 @@
+<?xml version='1.0' encoding='utf-8'?>
+<scene version="3.0.0">
+  <integrator type="path">
+    <integer name="max_depth" value="8" />
+  </integrator>
+  <emitter type="constant">
+    <rgb name="radiance" value="0.25,0.25,0.25" />
+  </emitter>
+  <sensor type="perspective">
+    <float name="fov" value="45" />
+    <film type="hdrfilm">
+      <integer name="width" value="800" />
+      <integer name="height" value="450" />
+    </film>
+  </sensor>
+  <bsdf type="diffuse" id="mat-itu_concrete" />
+  <bsdf type="diffuse" id="mat-itu_metal" />
+  <bsdf type="diffuse" id="mat-itu_glass" />
+  <shape type="obj" id="mesh-rail_left">
+    <string name="filename" value="meshes/rail_left.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_metal" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-rail_right">
+    <string name="filename" value="meshes/rail_right.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_metal" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-barrier_north">
+    <string name="filename" value="meshes/barrier_north.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_concrete" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-barrier_south">
+    <string name="filename" value="meshes/barrier_south.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_concrete" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-tunnel_floor">
+    <string name="filename" value="meshes/tunnel_floor.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_concrete" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-tunnel_wall_north">
+    <string name="filename" value="meshes/tunnel_wall_north.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_concrete" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-tunnel_wall_south">
+    <string name="filename" value="meshes/tunnel_wall_south.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_concrete" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-tunnel_roof">
+    <string name="filename" value="meshes/tunnel_roof.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_concrete" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-west_portal_gnb_mast">
+    <string name="filename" value="meshes/west_portal_gnb_mast.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_metal" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-west_portal_gnb_antenna">
+    <string name="filename" value="meshes/west_portal_gnb_antenna.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_metal" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-east_portal_gnb_mast">
+    <string name="filename" value="meshes/east_portal_gnb_mast.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_metal" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-east_portal_gnb_antenna">
+    <string name="filename" value="meshes/east_portal_gnb_antenna.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_metal" name="bsdf" />
+  </shape>
+</scene>

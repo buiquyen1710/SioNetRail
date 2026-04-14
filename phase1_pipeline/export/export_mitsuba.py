@@ -20,7 +20,7 @@ def parse_args() -> argparse.Namespace:
     if "--" in argv:
         argv = argv[argv.index("--") + 1 :]
     else:
-        argv = []
+        argv = argv[1:]
     parser = argparse.ArgumentParser(description="Export the current Blender scene to Mitsuba XML.")
     parser.add_argument(
         "--config",
@@ -87,11 +87,10 @@ def material_bsdf(material: bpy.types.Material | None, bsdf_id: str) -> ET.Eleme
     return bsdf
 
 
-def build_scene_xml(output_paths) -> ET.ElementTree:
+def build_scene_xml(output_paths, config) -> ET.ElementTree:
     mesh_dir = output_paths["mesh_dir"]
     xml_dir = output_paths["mitsuba_xml"].parent
     root = ET.Element("scene", {"version": "3.0.0"})
-    config = load_config(str(ROOT / "phase1_pipeline" / "config" / "config.yaml"))
     include_train_in_rt_scene = bool(config.get("ray_tracing", {}).get("include_train_in_rt_scene", False))
 
     integrator = ET.SubElement(root, "integrator", {"type": "path"})
@@ -113,7 +112,7 @@ def build_scene_xml(output_paths) -> ET.ElementTree:
     for obj in sorted(bpy.data.objects, key=lambda item: item.name):
         if obj.type not in {"MESH", "CURVE"}:
             continue
-        if not include_train_in_rt_scene and obj.name.startswith("Train"):
+        if not include_train_in_rt_scene and obj.name.lower().startswith("train"):
             continue
         mesh_path = mesh_dir / f"{safe_name(obj.name)}.obj"
         export_object_to_obj(obj, mesh_path)
@@ -147,7 +146,7 @@ def main() -> None:
     args = parse_args()
     config = load_config(args.config)
     output_paths = resolve_output_paths(config)
-    tree = build_scene_xml(output_paths)
+    tree = build_scene_xml(output_paths, config)
     indent(tree.getroot())
     tree.write(output_paths["mitsuba_xml"], encoding="utf-8", xml_declaration=True)
     print(f"Exported Mitsuba XML to {output_paths['mitsuba_xml']}")

@@ -36,6 +36,7 @@ from phase1_pipeline.output.export_trace import (
     export_validation_plots,
 )
 from phase1_pipeline.raytracing.compute_doppler import angles_from_vector, compute_doppler_hz, unit_vector_from_angles
+from phase1_pipeline.scenarios import active_base_station, is_tunnel_scenario
 
 
 def try_import_sionna():
@@ -218,13 +219,22 @@ def rx_position_for_time(config: Dict, time_s: float) -> Tuple[float, float, flo
 
 
 def tx_position(config: Dict) -> Tuple[float, float, float]:
-    x, y, z = [float(v) for v in config["base_station"]["position_m"]]
-    antenna_size = [float(v) for v in config["base_station"].get("antenna_size_m", [0.8, 0.25, 1.2])]
-    clearance = float(config["base_station"].get("ray_origin_clearance_m", 0.2))
+    base_cfg = active_base_station(config)
+    x, y, z = [float(v) for v in base_cfg["position_m"]]
+    antenna_size = [float(v) for v in base_cfg.get("antenna_size_m", [0.8, 0.25, 1.2])]
+    clearance = float(base_cfg.get("ray_origin_clearance_m", 0.2))
+    facing = str(base_cfg.get("facing", "y-"))
     # Place the radiating point slightly in front of the antenna face toward the track,
     # instead of on or inside the support geometry.
     face_offset = antenna_size[1] / 2.0 + clearance
-    y -= math.copysign(face_offset, y if abs(y) > 1e-9 else 1.0)
+    if facing == "x+":
+        x += face_offset
+    elif facing == "x-":
+        x -= face_offset
+    elif facing == "y+":
+        y += face_offset
+    else:
+        y -= face_offset
     return (x, y, z)
 
 
@@ -371,6 +381,8 @@ def polyline_clear(scene, mi, points: Sequence[Tuple[float, float, float]], epsi
 
 
 def nearest_catenary_points(config: Dict, rx: Tuple[float, float, float], count: int = 3) -> List[Tuple[float, float, float]]:
+    if "catenary" not in config:
+        return []
     scene_length = float(config["scene"]["length_m"])
     catenary_cfg = config["catenary"]
     spacing = float(catenary_cfg["pole_spacing_m"])
@@ -418,6 +430,93 @@ def fallback_paths(config: Dict, mitsuba_scene=None, mi=None):
     scene_length = float(config["scene"]["length_m"])
     scene_width = float(config["scene"]["width_m"])
     tx = tx_position(config)
+
+    if is_tunnel_scenario(config):
+        tunnel_cfg = config["tunnel"]
+        tunnel_height = float(tunnel_cfg["inner_height_m"])
+        strict_los = True
+        wall_planes = [
+            {
+                "name": "wall_north",
+                "point": (0.0, barrier_center - barrier_thickness / 2.0, tunnel_height / 2.0),
+                "normal": (0.0, -1.0, 0.0),
+                "gain": complex(-0.68, 0.0),
+            },
+            {
+                "name": "wall_south",
+                "point": (0.0, -barrier_center + barrier_thickness / 2.0, tunnel_height / 2.0),
+                "normal": (0.0, 1.0, 0.0),
+                "gain": complex(-0.68, 0.0),
+            },
+        ]
+        floor_plane = {
+            "name": "floor_reflection",
+            "point": (0.0, 0.0, 0.0),
+            "normal": (0.0, 0.0, 1.0),
+            "gain": complex(-0.52, 0.0),
+        }
+        ceiling_plane = {
+            "name": "ceiling_reflection",
+            "point": (0.0, 0.0, tunnel_height),
+            "normal": (0.0, 0.0, -1.0),
+            "gain": complex(-0.58, 0.0),
+        }
+
+        for _, time_s in simulation_times(config):
+            rx = rx_position_for_time(config, time_s)
+            candidates = []
+            los_points = [tx, rx]
+            los_valid = True
+            if mitsuba_scene is not None and strict_los:
+                los_valid = polyline_clear(mitsuba_scene, mi, los_points)
+            if los_valid:
+                candidates.append(build_candidate_from_points("los", los_points, complex(1.0, 0.0), config, 1))
+
+            for plane in (floor_plane, ceiling_plane):
+                mirrored_tx = reflect_point_across_plane(tx, plane["point"], plane["normal"])
+                reflection = line_plane_intersection(mirrored_tx, rx, plane["point"], plane["normal"])
+                if reflection is None:
+                    continue
+                clear = True
+                if mitsuba_scene is not None:
+                    clear = polyline_clear(mitsuba_scene, mi, [tx, reflection, rx])
+                candidates.append(
+                    build_candidate_from_points(
+                        plane["name"],
+                        [tx, reflection, rx],
+                        softened_gain(plane["gain"], clear, penalty_db=5.0),
+                        config,
+                        0,
+                    )
+                )
+
+            for wall in wall_planes:
+                mirrored_tx = reflect_point_across_plane(tx, wall["point"], wall["normal"])
+                reflection = line_plane_intersection(mirrored_tx, rx, wall["point"], wall["normal"])
+                if reflection is None:
+                    continue
+                clear = True
+                if mitsuba_scene is not None:
+                    clear = polyline_clear(mitsuba_scene, mi, [tx, reflection, rx])
+                candidates.append(
+                    build_candidate_from_points(
+                        wall["name"],
+                        [tx, reflection, rx],
+                        softened_gain(wall["gain"], clear, penalty_db=6.0),
+                        config,
+                        0,
+                    )
+                )
+
+            unique_candidates = {}
+            for candidate in candidates:
+                unique_candidates[candidate.name] = candidate
+            candidates = list(unique_candidates.values())
+            candidates.sort(key=lambda item: abs(item.coefficient), reverse=True)
+            if not candidates:
+                candidates.append(build_candidate_from_points("los_nominal", [tx, rx], complex(1.0, 0.0), config, 1))
+            yield time_s, candidates
+        return
 
     barrier_planes = [
         {
@@ -668,6 +767,21 @@ def recover_missing_los(config: Dict, rx_pos: Tuple[float, float, float], extrac
     return sorted(extracted, key=lambda item: (item.delay_s, -abs(item.coefficient)))
 
 
+def supplement_tunnel_paths(extracted: List[CandidatePath], fallback_candidates: List[CandidatePath], minimum_paths: int = 4) -> List[CandidatePath]:
+    by_name = {path.name: path for path in extracted}
+    has_los = any(path.los_flag == 1 for path in extracted)
+    if len(by_name) >= minimum_paths:
+        return sorted(by_name.values(), key=lambda item: (item.delay_s, -abs(item.coefficient)))
+    for candidate in sorted(fallback_candidates, key=lambda item: abs(item.coefficient), reverse=True):
+        if has_los and candidate.los_flag == 1:
+            continue
+        if candidate.name not in by_name:
+            by_name[candidate.name] = candidate
+        if len(by_name) >= minimum_paths:
+            break
+    return sorted(by_name.values(), key=lambda item: (item.delay_s, -abs(item.coefficient)))
+
+
 def run_sionna_backend(config: Dict, output_paths: Dict) -> List[Dict[str, float]]:
     imports = try_import_sionna()
     if imports is None:
@@ -709,12 +823,16 @@ def run_sionna_backend(config: Dict, output_paths: Dict) -> List[Dict[str, float
     solver = imports["PathSolver"]()
 
     solver_timestep = sionna_solver_timestep_s(config)
-    total_steps = simulation_step_count(config, timestep_s=solver_timestep)
+    solver_times = [time_s for _, time_s in simulation_times(config, timestep_s=solver_timestep)]
+    supplemental_paths = {}
+    if is_tunnel_scenario(config):
+        supplemental_paths = fallback_paths_for_times(config, solver_times)
+    total_steps = len(solver_times)
     mid_step = total_steps // 2
     summary: List[Dict[str, float]] = []
     snapshot_data: Dict[str, Dict] = {}
     with TraceCsvWriter(output_paths["trace_csv"]) as writer:
-        for step_idx, time_s in simulation_times(config, timestep_s=solver_timestep):
+        for step_idx, time_s in enumerate(solver_times):
             rx_pos = rx_position_for_time(config, time_s)
             rx.position = mi.Point3f(*rx_pos)
             tx.look_at(rx)
@@ -733,6 +851,8 @@ def run_sionna_backend(config: Dict, output_paths: Dict) -> List[Dict[str, float
             )
             extracted = extract_sionna_paths(paths, config)
             extracted = recover_missing_los(config, rx_pos, extracted)
+            if is_tunnel_scenario(config):
+                extracted = supplement_tunnel_paths(extracted, supplemental_paths.get(round(time_s, 9), []))
             summary_point = _append_rows(writer, time_s, extracted)
             summary.append(summary_point)
 
