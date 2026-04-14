@@ -63,6 +63,11 @@ def resolve_output_paths(config: Dict[str, Any]) -> Dict[str, Path]:
     return resolved
 
 
+def resolve_config_relative_path(config: Dict[str, Any], relative_path: str) -> Path:
+    cfg_path = Path(config["_config_path"])
+    return (cfg_path.parent.parent / relative_path).resolve()
+
+
 def railway_duration_s(config: Dict[str, Any]) -> float:
     sim = config["simulation"]
     duration = sim.get("duration_s")

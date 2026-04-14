@@ -96,6 +96,47 @@ def export_validation_plots(
     plt.close()
 
 
+def export_multi_station_validation_plots(
+    station_summaries: Dict[str, List[Dict[str, float]]],
+    doppler_plot_path: str | Path,
+    path_count_plot_path: str | Path,
+) -> None:
+    doppler_plot_path = ensure_parent(Path(doppler_plot_path).resolve())
+    path_count_plot_path = ensure_parent(Path(path_count_plot_path).resolve())
+
+    plt.figure(figsize=(11, 5.0))
+    for label, summary in station_summaries.items():
+        if not summary:
+            continue
+        time_ms = [point["time_s"] * 1e3 for point in summary]
+        max_abs_doppler = [point["max_abs_doppler_hz"] for point in summary]
+        plt.plot(time_ms, max_abs_doppler, linewidth=1.1, label=label)
+    plt.xlabel("Time (ms)")
+    plt.ylabel("Max |Doppler| (Hz)")
+    plt.title("Doppler Shift vs Time (All Base Stations)")
+    plt.grid(True, alpha=0.3)
+    plt.legend(loc="upper right", fontsize=8, ncol=2)
+    plt.tight_layout()
+    plt.savefig(doppler_plot_path, dpi=180)
+    plt.close()
+
+    plt.figure(figsize=(11, 5.0))
+    for label, summary in station_summaries.items():
+        if not summary:
+            continue
+        time_ms = [point["time_s"] * 1e3 for point in summary]
+        path_count = [point["path_count"] for point in summary]
+        plt.plot(time_ms, path_count, linewidth=1.1, label=label)
+    plt.xlabel("Time (ms)")
+    plt.ylabel("Number of Paths")
+    plt.title("Resolved Paths vs Time (All Base Stations)")
+    plt.grid(True, alpha=0.3)
+    plt.legend(loc="upper right", fontsize=8, ncol=2)
+    plt.tight_layout()
+    plt.savefig(path_count_plot_path, dpi=180)
+    plt.close()
+
+
 def _box_faces(center: Tuple[float, float, float], size: Tuple[float, float, float]) -> List[List[Tuple[float, float, float]]]:
     cx, cy, cz = center
     lx, ly, lz = size

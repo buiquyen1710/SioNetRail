@@ -8,7 +8,14 @@ from pathlib import Path
 from typing import Dict, Iterable, List, Tuple
 
 from phase1_pipeline.common import dump_json, ensure_parent, load_config, resolve_output_paths
-from phase1_pipeline.scenarios import active_base_station, all_base_stations, is_tunnel_scenario
+from phase1_pipeline.scenarios import (
+    active_base_station,
+    all_base_stations,
+    is_tunnel_scenario,
+    is_unified_scenario,
+    unified_modules,
+    unified_trajectory_samples,
+)
 
 
 def safe_text(value: object) -> str:
@@ -91,8 +98,7 @@ def write_obj(path: Path, vertices: Iterable[Tuple[float, float, float]], faces:
 
 
 def material_bsdf(bsdf_id: str) -> ET.Element:
-    bsdf = ET.Element("bsdf", {"type": "diffuse", "id": bsdf_id})
-    return bsdf
+    return ET.Element("bsdf", {"type": "diffuse", "id": bsdf_id})
 
 
 def add_shape(root: ET.Element, shape_id: str, filename: Path, bsdf_id: str, xml_dir: Path) -> None:
@@ -112,27 +118,165 @@ def facing_offset(facing: str, distance: float) -> Tuple[float, float, float]:
     return mapping.get(facing, (0.0, -distance, 0.0))
 
 
+def append_box(objects: List[Tuple[str, Path, str]], mesh_dir: Path, name: str, center, size, bsdf_id: str) -> None:
+    path = mesh_dir / f"{safe_name(name)}.obj"
+    verts, faces = box_vertices(center, size)
+    write_obj(path, verts, faces)
+    objects.append((name, path, bsdf_id))
+
+
+def append_cylinder(objects: List[Tuple[str, Path, str]], mesh_dir: Path, name: str, center, radius: float, depth: float, bsdf_id: str, axis: str = "z") -> None:
+    path = mesh_dir / f"{safe_name(name)}.obj"
+    verts, faces = cylinder_vertices(center, radius, depth, axis=axis)
+    write_obj(path, verts, faces)
+    objects.append((name, path, bsdf_id))
+
+
 def append_base_station_objects(config: Dict, mesh_dir: Path, objects: List[Tuple[str, Path, str]]) -> List[Tuple[float, float, float]]:
     stations = []
     for idx, gnb_cfg in enumerate(all_base_stations(config)):
         label = safe_name(str(gnb_cfg.get("name", f"gnb_{idx}")))
         mast_x, mast_y, mast_z = [float(v) for v in gnb_cfg["position_m"]]
-        mast_path = mesh_dir / f"{label}_mast.obj"
-        verts, faces = cylinder_vertices((mast_x, mast_y, float(gnb_cfg["height_m"]) / 2.0), float(gnb_cfg["mast_radius_m"]), float(gnb_cfg["height_m"]), axis="z")
-        write_obj(mast_path, verts, faces)
-        objects.append((f"{label}_mast", mast_path, "mat-itu_metal"))
-
-        antenna_path = mesh_dir / f"{label}_antenna.obj"
+        append_cylinder(objects, mesh_dir, f"{label}_mast", (mast_x, mast_y, float(gnb_cfg["height_m"]) / 2.0), float(gnb_cfg["mast_radius_m"]), float(gnb_cfg["height_m"]), "mat-itu_metal")
         antenna_size = tuple(float(v) for v in gnb_cfg["antenna_size_m"])
         dx, dy, dz = facing_offset(str(gnb_cfg.get("facing", "y-")), antenna_size[1] / 2.0)
-        verts, faces = box_vertices((mast_x + dx, mast_y + dy, mast_z + dz), antenna_size)
-        write_obj(antenna_path, verts, faces)
-        objects.append((f"{label}_antenna", antenna_path, "mat-itu_metal"))
+        append_box(objects, mesh_dir, f"{label}_antenna", (mast_x + dx, mast_y + dy, mast_z + dz), antenna_size, "mat-itu_metal")
         stations.append((mast_x, mast_y, mast_z))
     return stations
 
 
-def build_scene(config: Dict, output_paths: Dict[str, Path]) -> None:
+def build_unified_scene(config: Dict, output_paths: Dict[str, Path]) -> None:
+    mesh_dir = output_paths["mesh_dir"]
+    objects: List[Tuple[str, Path, str]] = []
+    train_cfg = config["train"]
+    include_train_in_rt_scene = bool(config.get("ray_tracing", {}).get("include_train_in_rt_scene", False))
+
+    append_box(objects, mesh_dir, "GROUND_OUTDOOR", (1500.0, 0.0, -0.3), (3000.0, 200.0, 0.6), "mat-itu_ground")
+
+    # Module A
+    append_box(objects, mesh_dir, "VIADUCT_A_Deck", (350.0, 0.0, 11.0), (700.0, 12.0, 2.0), "mat-itu_concrete")
+    append_box(objects, mesh_dir, "TRACKBED_A", (350.0, 0.0, 11.85), (700.0, 3.2, 0.3), "mat-itu_concrete")
+    append_box(objects, mesh_dir, "RAIL_A_Left", (350.0, -0.7175, 12.086), (700.0, 0.07, 0.172), "mat-itu_metal")
+    append_box(objects, mesh_dir, "RAIL_A_Right", (350.0, 0.7175, 12.086), (700.0, 0.07, 0.172), "mat-itu_metal")
+    append_box(objects, mesh_dir, "PARAPET_A_Left", (350.0, -5.875, 12.6), (700.0, 0.25, 1.2), "mat-itu_concrete")
+    append_box(objects, mesh_dir, "PARAPET_A_Right", (350.0, 5.875, 12.6), (700.0, 0.25, 1.2), "mat-itu_concrete")
+    append_box(objects, mesh_dir, "BARRIER_A_Left", (350.0, -3.6, 13.75), (700.0, 0.20, 3.5), "mat-itu_concrete")
+    append_box(objects, mesh_dir, "BARRIER_A_Right", (350.0, 3.6, 13.75), (700.0, 0.20, 3.5), "mat-itu_concrete")
+    append_box(objects, mesh_dir, "WIRE_A_Catenary", (350.0, -0.2, 17.5), (700.0, 0.02, 0.02), "mat-itu_copper")
+    for idx in range(14):
+        x = 50.0 * (idx + 1)
+        append_box(objects, mesh_dir, f"PIER_A_{idx + 1:02d}", (x, 0.0, 5.0), (3.0, 6.0, 10.0), "mat-itu_concrete")
+    for idx in range(12):
+        x = 30.0 + 60.0 * idx
+        append_cylinder(objects, mesh_dir, f"POLE_A_{idx + 1:02d}", (x, -2.5, 15.5), 0.15, 7.0, "mat-itu_metal")
+
+    # Module B
+    append_box(objects, mesh_dir, "TRACKBED_B", (900.0, 0.0, -0.15), (400.0, 3.2, 0.3), "mat-itu_concrete")
+    append_box(objects, mesh_dir, "RAIL_B_Left", (900.0, -0.7175, 0.086), (400.0, 0.07, 0.172), "mat-itu_metal")
+    append_box(objects, mesh_dir, "RAIL_B_Right", (900.0, 0.7175, 0.086), (400.0, 0.07, 0.172), "mat-itu_metal")
+    append_box(objects, mesh_dir, "BARRIER_B_Left", (900.0, -3.6, 1.75), (400.0, 0.20, 3.5), "mat-itu_concrete")
+    append_box(objects, mesh_dir, "BARRIER_B_Right", (900.0, 3.6, 1.75), (400.0, 0.20, 3.5), "mat-itu_concrete")
+    append_box(objects, mesh_dir, "WIRE_B_Catenary", (900.0, -0.2, 5.5), (400.0, 0.02, 0.02), "mat-itu_copper")
+    for idx in range(7):
+        append_cylinder(objects, mesh_dir, f"POLE_B_{idx + 1:02d}", (700.0 + 60.0 * idx, -2.5, 3.5), 0.15, 7.0, "mat-itu_metal")
+
+    # Module C
+    append_box(objects, mesh_dir, "TRACKBED_C", (1200.0, 0.0, -0.15), (200.0, 3.2, 0.3), "mat-itu_concrete")
+    append_box(objects, mesh_dir, "RAIL_C_Left", (1200.0, -0.7175, 0.086), (200.0, 0.07, 0.172), "mat-itu_metal")
+    append_box(objects, mesh_dir, "RAIL_C_Right", (1200.0, 0.7175, 0.086), (200.0, 0.07, 0.172), "mat-itu_metal")
+    append_box(objects, mesh_dir, "BARRIER_C_Left", (1150.0, -3.6, 1.75), (100.0, 0.20, 3.5), "mat-itu_concrete")
+    append_box(objects, mesh_dir, "BARRIER_C_Right", (1150.0, 3.6, 1.75), (100.0, 0.20, 3.5), "mat-itu_concrete")
+    append_cylinder(objects, mesh_dir, "POLE_C_01", (1120.0, -2.5, 3.5), 0.15, 7.0, "mat-itu_metal")
+    append_cylinder(objects, mesh_dir, "POLE_C_02", (1180.0, -2.5, 3.5), 0.15, 7.0, "mat-itu_metal")
+    for side, y in (("Left", -5.25), ("Right", 5.25)):
+        for step_idx, (x, height) in enumerate(((1175.0, 3.0), (1225.0, 5.0), (1275.0, 7.5)), start=1):
+            append_box(objects, mesh_dir, f"STEEPWALL_C_{side}_{step_idx}", (x, y, height / 2.0), (50.0, 0.5, height), "mat-itu_granite")
+
+    # Module D
+    append_box(objects, mesh_dir, "TUNNEL_D_Floor", (1450.0, 0.0, -0.25), (300.0, 10.0, 0.5), "mat-itu_concrete")
+    append_box(objects, mesh_dir, "TUNNEL_D_Ceiling", (1450.0, 0.0, 7.75), (300.0, 10.0, 0.5), "mat-itu_concrete")
+    append_box(objects, mesh_dir, "TUNNEL_D_WallLeft", (1450.0, -5.25, 3.75), (300.0, 0.5, 7.5), "mat-itu_concrete")
+    append_box(objects, mesh_dir, "TUNNEL_D_WallRight", (1450.0, 5.25, 3.75), (300.0, 0.5, 7.5), "mat-itu_concrete")
+    append_box(objects, mesh_dir, "RAIL_D_Left", (1450.0, -0.7175, 0.086), (300.0, 0.07, 0.172), "mat-itu_metal")
+    append_box(objects, mesh_dir, "RAIL_D_Right", (1450.0, 0.7175, 0.086), (300.0, 0.07, 0.172), "mat-itu_metal")
+
+    # Module E
+    append_box(objects, mesh_dir, "TRACKBED_E", (1750.0, 0.0, -0.15), (300.0, 3.2, 0.3), "mat-itu_concrete")
+    append_box(objects, mesh_dir, "RAIL_E_Left", (1750.0, -0.7175, 0.086), (300.0, 0.07, 0.172), "mat-itu_metal")
+    append_box(objects, mesh_dir, "RAIL_E_Right", (1750.0, 0.7175, 0.086), (300.0, 0.07, 0.172), "mat-itu_metal")
+    append_box(objects, mesh_dir, "BARRIER_E_Left", (1825.0, -3.6, 1.75), (150.0, 0.20, 3.5), "mat-itu_concrete")
+    append_box(objects, mesh_dir, "BARRIER_E_Right", (1825.0, 3.6, 1.75), (150.0, 0.20, 3.5), "mat-itu_concrete")
+    append_box(objects, mesh_dir, "WIRE_E_Catenary", (1825.0, -0.2, 5.5), (150.0, 0.02, 0.02), "mat-itu_copper")
+    for idx, x in enumerate((1770.0, 1830.0, 1890.0), start=1):
+        append_cylinder(objects, mesh_dir, f"POLE_E_{idx:02d}", (x, -2.5, 3.5), 0.15, 7.0, "mat-itu_metal")
+    for side, y in (("Left", -5.25), ("Right", 5.25)):
+        for step_idx, (x, height) in enumerate(((1625.0, 7.5), (1675.0, 5.0), (1725.0, 3.0)), start=1):
+            append_box(objects, mesh_dir, f"STEEPWALL_E_{side}_{step_idx}", (x, y, height / 2.0), (50.0, 0.5, height), "mat-itu_granite")
+
+    # Module F
+    append_box(objects, mesh_dir, "VIADUCT_F_Deck", (2450.0, 0.0, 11.0), (1100.0, 12.0, 2.0), "mat-itu_concrete")
+    append_box(objects, mesh_dir, "TRACKBED_F", (2450.0, 0.0, 11.85), (1100.0, 3.2, 0.3), "mat-itu_concrete")
+    append_box(objects, mesh_dir, "RAIL_F_Left", (2450.0, -0.7175, 12.086), (1100.0, 0.07, 0.172), "mat-itu_metal")
+    append_box(objects, mesh_dir, "RAIL_F_Right", (2450.0, 0.7175, 12.086), (1100.0, 0.07, 0.172), "mat-itu_metal")
+    append_box(objects, mesh_dir, "PARAPET_F_Left", (2450.0, -5.875, 12.6), (1100.0, 0.25, 1.2), "mat-itu_concrete")
+    append_box(objects, mesh_dir, "PARAPET_F_Right", (2450.0, 5.875, 12.6), (1100.0, 0.25, 1.2), "mat-itu_concrete")
+    append_box(objects, mesh_dir, "BARRIER_F_Left", (2450.0, -3.6, 13.75), (1100.0, 0.20, 3.5), "mat-itu_concrete")
+    append_box(objects, mesh_dir, "BARRIER_F_Right", (2450.0, 3.6, 13.75), (1100.0, 0.20, 3.5), "mat-itu_concrete")
+    append_box(objects, mesh_dir, "WIRE_F_Catenary", (2450.0, -0.2, 17.5), (1100.0, 0.02, 0.02), "mat-itu_copper")
+    for idx in range(22):
+        x = 1925.0 + 50.0 * idx
+        append_box(objects, mesh_dir, f"PIER_F_{idx + 1:02d}", (x, 0.0, 5.0), (3.0, 6.0, 10.0), "mat-itu_concrete")
+    for idx in range(18):
+        x = 1930.0 + 60.0 * idx
+        append_cylinder(objects, mesh_dir, f"POLE_F_{idx + 1:02d}", (x, -2.5, 15.5), 0.15, 7.0, "mat-itu_metal")
+
+    gnb_positions = append_base_station_objects(config, mesh_dir, objects)
+
+    trajectory = unified_trajectory_samples(config)
+    train_x, train_y, train_z = trajectory[0]
+    train_length = float(train_cfg.get("length_m", 25.0))
+    train_width = float(train_cfg.get("width_m", 3.4))
+    train_height = float(train_cfg.get("body_height_m", 3.8))
+    train_body_center = (train_x - 12.5, train_y, train_z - 2.1)
+    if include_train_in_rt_scene:
+        append_box(objects, mesh_dir, "TRAIN_Body", train_body_center, (train_length, train_width, train_height), "mat-itu_metal")
+
+    root = ET.Element("scene", {"version": "3.0.0"})
+    xml_dir = output_paths["mitsuba_xml"].parent
+    integrator = ET.SubElement(root, "integrator", {"type": "path"})
+    ET.SubElement(integrator, "integer", {"name": "max_depth", "value": "10"})
+    emitter = ET.SubElement(root, "emitter", {"type": "constant"})
+    ET.SubElement(emitter, "rgb", {"name": "radiance", "value": "0.20,0.20,0.20"})
+    sensor = ET.SubElement(root, "sensor", {"type": "perspective"})
+    ET.SubElement(sensor, "float", {"name": "fov", "value": "45"})
+    film = ET.SubElement(sensor, "film", {"type": "hdrfilm"})
+    ET.SubElement(film, "integer", {"name": "width", "value": "1024"})
+    ET.SubElement(film, "integer", {"name": "height", "value": "576"})
+
+    for bsdf_id in ("mat-itu_concrete", "mat-itu_metal", "mat-itu_glass", "mat-itu_ground", "mat-itu_granite", "mat-itu_copper"):
+        root.append(material_bsdf(bsdf_id))
+    for name, path, bsdf_id in objects:
+        add_shape(root, name, path, bsdf_id, xml_dir)
+
+    tree = ET.ElementTree(root)
+    ET.indent(tree, space="  ")
+    tree.write(output_paths["mitsuba_xml"], encoding="utf-8", xml_declaration=True)
+
+    metadata = {
+        "scene_type": "unified_3000m",
+        "track_centerline_start_m": [0.0, 0.0, trajectory[0][2]],
+        "track_centerline_end_m": [3000.0, 0.0, trajectory[-1][2]],
+        "modules": unified_modules(),
+        "gnb_position_m": list(active_base_station(config)["position_m"]),
+        "all_gnb_positions_m": [list(pos) for pos in gnb_positions],
+        "train_reference_position_m": list(train_body_center),
+        "train_dimensions_m": {"length_m": train_length, "width_m": train_width, "body_height_m": train_height},
+        "rx_trajectory_samples": [[x, y, z] for x, y, z in trajectory],
+    }
+    dump_json(output_paths["scene_metadata"], metadata)
+
+
+def build_legacy_scene(config: Dict, output_paths: Dict[str, Path]) -> None:
     mesh_dir = output_paths["mesh_dir"]
     scene_cfg = config["scene"]
     rail_cfg = config["railway"]
@@ -149,26 +293,15 @@ def build_scene(config: Dict, output_paths: Dict[str, Path]) -> None:
     barrier_height = float(barrier_cfg["height_m"])
     barrier_thickness = float(barrier_cfg["thickness_m"])
 
-    objects = []
-
+    objects: List[Tuple[str, Path, str]] = []
     if not is_tunnel_scenario(config):
-        ground_path = mesh_dir / "ground.obj"
-        verts, faces = box_vertices((0.0, 0.0, -0.05), (length, width, 0.1))
-        write_obj(ground_path, verts, faces)
-        objects.append(("ground", ground_path, "mat-itu_concrete"))
+        append_box(objects, mesh_dir, "ground", (0.0, 0.0, -0.05), (length, width, 0.1), "mat-itu_ground")
 
     rail_half = gauge / 2.0
-    for suffix, y in (("left", rail_half), ("right", -rail_half)):
-        path = mesh_dir / f"rail_{suffix}.obj"
-        verts, faces = box_vertices((0.0, y, rail_height / 2.0), (length, rail_width, rail_height))
-        write_obj(path, verts, faces)
-        objects.append((f"rail_{suffix}", path, "mat-itu_metal"))
-
-    for suffix, y in (("north", barrier_offset), ("south", -barrier_offset)):
-        path = mesh_dir / f"barrier_{suffix}.obj"
-        verts, faces = box_vertices((0.0, y, barrier_height / 2.0), (length, barrier_thickness, barrier_height))
-        write_obj(path, verts, faces)
-        objects.append((f"barrier_{suffix}", path, "mat-itu_concrete"))
+    append_box(objects, mesh_dir, "rail_left", (0.0, rail_half, rail_height / 2.0), (length, rail_width, rail_height), "mat-itu_metal")
+    append_box(objects, mesh_dir, "rail_right", (0.0, -rail_half, rail_height / 2.0), (length, rail_width, rail_height), "mat-itu_metal")
+    append_box(objects, mesh_dir, "barrier_north", (0.0, barrier_offset, barrier_height / 2.0), (length, barrier_thickness, barrier_height), "mat-itu_concrete")
+    append_box(objects, mesh_dir, "barrier_south", (0.0, -barrier_offset, barrier_height / 2.0), (length, barrier_thickness, barrier_height), "mat-itu_concrete")
 
     if is_tunnel_scenario(config):
         tunnel_cfg = config["tunnel"]
@@ -177,19 +310,10 @@ def build_scene(config: Dict, output_paths: Dict[str, Path]) -> None:
         wall_thickness = float(tunnel_cfg.get("wall_thickness_m", 0.35))
         tunnel_length = float(tunnel_cfg["length_m"])
         tunnel_center_x = float(tunnel_cfg.get("center_x_m", 0.0))
-        floor_path = mesh_dir / "tunnel_floor.obj"
-        verts, faces = box_vertices((tunnel_center_x, 0.0, -wall_thickness / 2.0), (tunnel_length + wall_thickness * 2.0, inner_width + wall_thickness * 2.0, wall_thickness))
-        write_obj(floor_path, verts, faces)
-        objects.append(("tunnel_floor", floor_path, "mat-itu_concrete"))
-        for suffix, y in (("north", inner_width / 2.0 + wall_thickness / 2.0), ("south", -inner_width / 2.0 - wall_thickness / 2.0)):
-            path = mesh_dir / f"tunnel_wall_{suffix}.obj"
-            verts, faces = box_vertices((tunnel_center_x, y, inner_height / 2.0), (tunnel_length, wall_thickness, inner_height))
-            write_obj(path, verts, faces)
-            objects.append((f"tunnel_wall_{suffix}", path, "mat-itu_concrete"))
-        roof_path = mesh_dir / "tunnel_roof.obj"
-        verts, faces = box_vertices((tunnel_center_x, 0.0, inner_height + wall_thickness / 2.0), (tunnel_length, inner_width + wall_thickness * 2.0, wall_thickness))
-        write_obj(roof_path, verts, faces)
-        objects.append(("tunnel_roof", roof_path, "mat-itu_concrete"))
+        append_box(objects, mesh_dir, "tunnel_floor", (tunnel_center_x, 0.0, -wall_thickness / 2.0), (tunnel_length + wall_thickness * 2.0, inner_width + wall_thickness * 2.0, wall_thickness), "mat-itu_concrete")
+        append_box(objects, mesh_dir, "tunnel_wall_north", (tunnel_center_x, inner_width / 2.0 + wall_thickness / 2.0, inner_height / 2.0), (tunnel_length, wall_thickness, inner_height), "mat-itu_concrete")
+        append_box(objects, mesh_dir, "tunnel_wall_south", (tunnel_center_x, -inner_width / 2.0 - wall_thickness / 2.0, inner_height / 2.0), (tunnel_length, wall_thickness, inner_height), "mat-itu_concrete")
+        append_box(objects, mesh_dir, "tunnel_roof", (tunnel_center_x, 0.0, inner_height + wall_thickness / 2.0), (tunnel_length, inner_width + wall_thickness * 2.0, wall_thickness), "mat-itu_concrete")
     else:
         catenary_cfg = config["catenary"]
         pole_spacing = float(catenary_cfg["pole_spacing_m"])
@@ -199,37 +323,19 @@ def build_scene(config: Dict, output_paths: Dict[str, Path]) -> None:
         pole_count = int(length / pole_spacing) + 1
         for idx in range(pole_count):
             x = -length / 2.0 + idx * pole_spacing
-            path = mesh_dir / f"catenary_pole_{idx:03d}.obj"
-            verts, faces = cylinder_vertices((x, pole_offset, pole_height / 2.0), pole_radius, pole_height, axis="z")
-            write_obj(path, verts, faces)
-            objects.append((f"catenary_pole_{idx:03d}", path, "mat-itu_metal"))
+            append_cylinder(objects, mesh_dir, f"catenary_pole_{idx:03d}", (x, pole_offset, pole_height / 2.0), pole_radius, pole_height, "mat-itu_metal")
 
     gnb_positions = append_base_station_objects(config, mesh_dir, objects)
 
     train_length = float(train_cfg.get("length_m", 25.0))
     train_width = float(train_cfg.get("width_m", 3.2))
     train_height = float(train_cfg.get("body_height_m", 3.6))
-    nose_length = float(train_cfg.get("nose_length_m", 4.0))
     wheel_radius = float(train_cfg.get("wheel_radius_m", 0.42))
     x = -length / 2.0 + train_length / 2.0 + 4.0
     y = float(train_cfg.get("lateral_offset_m", 0.0))
     z = wheel_radius + train_height / 2.0
-
-    body_path = mesh_dir / "train_body.obj"
-    verts, faces = box_vertices((x + nose_length / 2.0, y, z), (train_length - nose_length, train_width, train_height))
-    write_obj(body_path, verts, faces)
-
-    nose_path = mesh_dir / "train_nose.obj"
-    verts, faces = box_vertices((x - (train_length - nose_length) / 2.0, y, z + 0.08), (nose_length, train_width * 0.92, train_height * 0.86))
-    write_obj(nose_path, verts, faces)
-
-    roof_path = mesh_dir / "train_roof.obj"
-    verts, faces = box_vertices((x + 0.8, y, z + train_height / 2.0 + 0.12), (train_length * 0.74, train_width * 0.7, 0.28))
-    write_obj(roof_path, verts, faces)
     if include_train_in_rt_scene:
-        objects.append(("train_body", body_path, "mat-itu_metal"))
-        objects.append(("train_nose", nose_path, "mat-itu_metal"))
-        objects.append(("train_roof", roof_path, "mat-itu_glass"))
+        append_box(objects, mesh_dir, "train_body", (x, y, z), (train_length, train_width, train_height), "mat-itu_metal")
 
     root = ET.Element("scene", {"version": "3.0.0"})
     xml_dir = output_paths["mitsuba_xml"].parent
@@ -242,13 +348,10 @@ def build_scene(config: Dict, output_paths: Dict[str, Path]) -> None:
     film = ET.SubElement(sensor, "film", {"type": "hdrfilm"})
     ET.SubElement(film, "integer", {"name": "width", "value": "800"})
     ET.SubElement(film, "integer", {"name": "height", "value": "450"})
-
-    for bsdf_id in ("mat-itu_concrete", "mat-itu_metal", "mat-itu_glass"):
+    for bsdf_id in ("mat-itu_concrete", "mat-itu_metal", "mat-itu_glass", "mat-itu_ground"):
         root.append(material_bsdf(bsdf_id))
-
     for name, path, bsdf_id in objects:
         add_shape(root, name, path, bsdf_id, xml_dir)
-
     tree = ET.ElementTree(root)
     ET.indent(tree, space="  ")
     tree.write(output_paths["mitsuba_xml"], encoding="utf-8", xml_declaration=True)
@@ -258,35 +361,18 @@ def build_scene(config: Dict, output_paths: Dict[str, Path]) -> None:
         "track_centerline_end_m": [config["scene"]["length_m"] / 2.0, 0.0, config["train"]["receiver_height_m"]],
         "gnb_position_m": list(active_base_station(config)["position_m"]),
         "all_gnb_positions_m": [list(pos) for pos in gnb_positions],
-        "train_reference_position_m": [x, y, z + train_height * 0.2],
-        "train_dimensions_m": {
-            "length_m": train_length,
-            "width_m": train_width,
-            "body_height_m": train_height,
-        },
+        "train_reference_position_m": [x, y, z],
     }
-    if is_tunnel_scenario(config):
-        metadata["tunnel_inner_planes_y_m"] = [
-            barrier_offset - barrier_thickness / 2.0,
-            -barrier_offset + barrier_thickness / 2.0,
-        ]
-        metadata["tunnel_height_m"] = config["tunnel"]["inner_height_m"]
-    else:
-        metadata["barrier_inner_planes_y_m"] = [
-            barrier_offset - barrier_thickness / 2.0,
-            -barrier_offset + barrier_thickness / 2.0,
-        ]
     dump_json(output_paths["scene_metadata"], metadata)
 
 
-# def parse_args() -> argparse.Namespace:
-#     parser = argparse.ArgumentParser(description="Export a Mitsuba scene directly from config without Blender.")
-#     parser.add_argument(
-#         "--config",
-#         default=str(Path(__file__).resolve().parents[2] / "phase1_pipeline" / "config" / "config.yaml"),
-#         help="Path to the pipeline YAML configuration file.",
-#     )
-#     return parser.parse_args()
+def build_scene(config: Dict, output_paths: Dict[str, Path]) -> None:
+    if is_unified_scenario(config):
+        build_unified_scene(config, output_paths)
+        return
+    build_legacy_scene(config, output_paths)
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Export a Mitsuba scene directly from config without Blender.")
     parser.add_argument(
@@ -294,14 +380,13 @@ def parse_args() -> argparse.Namespace:
         default=str(Path(__file__).resolve().parents[2] / "phase1_pipeline" / "config" / "config.yaml"),
         help="Path to the pipeline YAML configuration file.",
     )
-
     argv = sys.argv
     if "--" in argv:
-        argv = argv[argv.index("--") + 1:]
+        argv = argv[argv.index("--") + 1 :]
     else:
         argv = argv[1:]
-
     return parser.parse_args(argv)
+
 
 def main() -> None:
     args = parse_args()

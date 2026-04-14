@@ -1,0 +1,732 @@
+<?xml version='1.0' encoding='utf-8'?>
+<scene version="3.0.0">
+  <integrator type="path">
+    <integer name="max_depth" value="10" />
+  </integrator>
+  <emitter type="constant">
+    <rgb name="radiance" value="0.20,0.20,0.20" />
+  </emitter>
+  <sensor type="perspective">
+    <float name="fov" value="45" />
+    <film type="hdrfilm">
+      <integer name="width" value="1024" />
+      <integer name="height" value="576" />
+    </film>
+  </sensor>
+  <bsdf type="diffuse" id="mat-itu_concrete" />
+  <bsdf type="diffuse" id="mat-itu_metal" />
+  <bsdf type="diffuse" id="mat-itu_glass" />
+  <bsdf type="diffuse" id="mat-itu_ground" />
+  <bsdf type="diffuse" id="mat-itu_granite" />
+  <bsdf type="diffuse" id="mat-itu_copper" />
+  <shape type="obj" id="mesh-GROUND_OUTDOOR">
+    <string name="filename" value="meshes/GROUND_OUTDOOR.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_ground" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-VIADUCT_A_Deck">
+    <string name="filename" value="meshes/VIADUCT_A_Deck.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_concrete" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-TRACKBED_A">
+    <string name="filename" value="meshes/TRACKBED_A.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_concrete" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-RAIL_A_Left">
+    <string name="filename" value="meshes/RAIL_A_Left.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_metal" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-RAIL_A_Right">
+    <string name="filename" value="meshes/RAIL_A_Right.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_metal" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-PARAPET_A_Left">
+    <string name="filename" value="meshes/PARAPET_A_Left.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_concrete" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-PARAPET_A_Right">
+    <string name="filename" value="meshes/PARAPET_A_Right.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_concrete" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-BARRIER_A_Left">
+    <string name="filename" value="meshes/BARRIER_A_Left.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_concrete" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-BARRIER_A_Right">
+    <string name="filename" value="meshes/BARRIER_A_Right.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_concrete" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-WIRE_A_Catenary">
+    <string name="filename" value="meshes/WIRE_A_Catenary.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_copper" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-PIER_A_01">
+    <string name="filename" value="meshes/PIER_A_01.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_concrete" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-PIER_A_02">
+    <string name="filename" value="meshes/PIER_A_02.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_concrete" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-PIER_A_03">
+    <string name="filename" value="meshes/PIER_A_03.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_concrete" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-PIER_A_04">
+    <string name="filename" value="meshes/PIER_A_04.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_concrete" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-PIER_A_05">
+    <string name="filename" value="meshes/PIER_A_05.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_concrete" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-PIER_A_06">
+    <string name="filename" value="meshes/PIER_A_06.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_concrete" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-PIER_A_07">
+    <string name="filename" value="meshes/PIER_A_07.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_concrete" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-PIER_A_08">
+    <string name="filename" value="meshes/PIER_A_08.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_concrete" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-PIER_A_09">
+    <string name="filename" value="meshes/PIER_A_09.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_concrete" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-PIER_A_10">
+    <string name="filename" value="meshes/PIER_A_10.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_concrete" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-PIER_A_11">
+    <string name="filename" value="meshes/PIER_A_11.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_concrete" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-PIER_A_12">
+    <string name="filename" value="meshes/PIER_A_12.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_concrete" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-PIER_A_13">
+    <string name="filename" value="meshes/PIER_A_13.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_concrete" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-PIER_A_14">
+    <string name="filename" value="meshes/PIER_A_14.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_concrete" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-POLE_A_01">
+    <string name="filename" value="meshes/POLE_A_01.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_metal" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-POLE_A_02">
+    <string name="filename" value="meshes/POLE_A_02.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_metal" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-POLE_A_03">
+    <string name="filename" value="meshes/POLE_A_03.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_metal" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-POLE_A_04">
+    <string name="filename" value="meshes/POLE_A_04.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_metal" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-POLE_A_05">
+    <string name="filename" value="meshes/POLE_A_05.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_metal" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-POLE_A_06">
+    <string name="filename" value="meshes/POLE_A_06.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_metal" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-POLE_A_07">
+    <string name="filename" value="meshes/POLE_A_07.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_metal" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-POLE_A_08">
+    <string name="filename" value="meshes/POLE_A_08.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_metal" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-POLE_A_09">
+    <string name="filename" value="meshes/POLE_A_09.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_metal" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-POLE_A_10">
+    <string name="filename" value="meshes/POLE_A_10.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_metal" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-POLE_A_11">
+    <string name="filename" value="meshes/POLE_A_11.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_metal" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-POLE_A_12">
+    <string name="filename" value="meshes/POLE_A_12.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_metal" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-TRACKBED_B">
+    <string name="filename" value="meshes/TRACKBED_B.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_concrete" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-RAIL_B_Left">
+    <string name="filename" value="meshes/RAIL_B_Left.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_metal" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-RAIL_B_Right">
+    <string name="filename" value="meshes/RAIL_B_Right.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_metal" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-BARRIER_B_Left">
+    <string name="filename" value="meshes/BARRIER_B_Left.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_concrete" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-BARRIER_B_Right">
+    <string name="filename" value="meshes/BARRIER_B_Right.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_concrete" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-WIRE_B_Catenary">
+    <string name="filename" value="meshes/WIRE_B_Catenary.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_copper" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-POLE_B_01">
+    <string name="filename" value="meshes/POLE_B_01.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_metal" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-POLE_B_02">
+    <string name="filename" value="meshes/POLE_B_02.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_metal" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-POLE_B_03">
+    <string name="filename" value="meshes/POLE_B_03.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_metal" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-POLE_B_04">
+    <string name="filename" value="meshes/POLE_B_04.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_metal" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-POLE_B_05">
+    <string name="filename" value="meshes/POLE_B_05.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_metal" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-POLE_B_06">
+    <string name="filename" value="meshes/POLE_B_06.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_metal" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-POLE_B_07">
+    <string name="filename" value="meshes/POLE_B_07.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_metal" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-TRACKBED_C">
+    <string name="filename" value="meshes/TRACKBED_C.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_concrete" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-RAIL_C_Left">
+    <string name="filename" value="meshes/RAIL_C_Left.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_metal" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-RAIL_C_Right">
+    <string name="filename" value="meshes/RAIL_C_Right.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_metal" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-BARRIER_C_Left">
+    <string name="filename" value="meshes/BARRIER_C_Left.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_concrete" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-BARRIER_C_Right">
+    <string name="filename" value="meshes/BARRIER_C_Right.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_concrete" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-POLE_C_01">
+    <string name="filename" value="meshes/POLE_C_01.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_metal" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-POLE_C_02">
+    <string name="filename" value="meshes/POLE_C_02.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_metal" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-STEEPWALL_C_Left_1">
+    <string name="filename" value="meshes/STEEPWALL_C_Left_1.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_granite" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-STEEPWALL_C_Left_2">
+    <string name="filename" value="meshes/STEEPWALL_C_Left_2.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_granite" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-STEEPWALL_C_Left_3">
+    <string name="filename" value="meshes/STEEPWALL_C_Left_3.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_granite" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-STEEPWALL_C_Right_1">
+    <string name="filename" value="meshes/STEEPWALL_C_Right_1.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_granite" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-STEEPWALL_C_Right_2">
+    <string name="filename" value="meshes/STEEPWALL_C_Right_2.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_granite" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-STEEPWALL_C_Right_3">
+    <string name="filename" value="meshes/STEEPWALL_C_Right_3.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_granite" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-TUNNEL_D_Floor">
+    <string name="filename" value="meshes/TUNNEL_D_Floor.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_concrete" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-TUNNEL_D_Ceiling">
+    <string name="filename" value="meshes/TUNNEL_D_Ceiling.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_concrete" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-TUNNEL_D_WallLeft">
+    <string name="filename" value="meshes/TUNNEL_D_WallLeft.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_concrete" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-TUNNEL_D_WallRight">
+    <string name="filename" value="meshes/TUNNEL_D_WallRight.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_concrete" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-RAIL_D_Left">
+    <string name="filename" value="meshes/RAIL_D_Left.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_metal" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-RAIL_D_Right">
+    <string name="filename" value="meshes/RAIL_D_Right.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_metal" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-TRACKBED_E">
+    <string name="filename" value="meshes/TRACKBED_E.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_concrete" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-RAIL_E_Left">
+    <string name="filename" value="meshes/RAIL_E_Left.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_metal" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-RAIL_E_Right">
+    <string name="filename" value="meshes/RAIL_E_Right.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_metal" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-BARRIER_E_Left">
+    <string name="filename" value="meshes/BARRIER_E_Left.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_concrete" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-BARRIER_E_Right">
+    <string name="filename" value="meshes/BARRIER_E_Right.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_concrete" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-WIRE_E_Catenary">
+    <string name="filename" value="meshes/WIRE_E_Catenary.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_copper" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-POLE_E_01">
+    <string name="filename" value="meshes/POLE_E_01.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_metal" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-POLE_E_02">
+    <string name="filename" value="meshes/POLE_E_02.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_metal" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-POLE_E_03">
+    <string name="filename" value="meshes/POLE_E_03.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_metal" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-STEEPWALL_E_Left_1">
+    <string name="filename" value="meshes/STEEPWALL_E_Left_1.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_granite" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-STEEPWALL_E_Left_2">
+    <string name="filename" value="meshes/STEEPWALL_E_Left_2.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_granite" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-STEEPWALL_E_Left_3">
+    <string name="filename" value="meshes/STEEPWALL_E_Left_3.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_granite" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-STEEPWALL_E_Right_1">
+    <string name="filename" value="meshes/STEEPWALL_E_Right_1.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_granite" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-STEEPWALL_E_Right_2">
+    <string name="filename" value="meshes/STEEPWALL_E_Right_2.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_granite" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-STEEPWALL_E_Right_3">
+    <string name="filename" value="meshes/STEEPWALL_E_Right_3.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_granite" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-VIADUCT_F_Deck">
+    <string name="filename" value="meshes/VIADUCT_F_Deck.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_concrete" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-TRACKBED_F">
+    <string name="filename" value="meshes/TRACKBED_F.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_concrete" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-RAIL_F_Left">
+    <string name="filename" value="meshes/RAIL_F_Left.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_metal" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-RAIL_F_Right">
+    <string name="filename" value="meshes/RAIL_F_Right.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_metal" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-PARAPET_F_Left">
+    <string name="filename" value="meshes/PARAPET_F_Left.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_concrete" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-PARAPET_F_Right">
+    <string name="filename" value="meshes/PARAPET_F_Right.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_concrete" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-BARRIER_F_Left">
+    <string name="filename" value="meshes/BARRIER_F_Left.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_concrete" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-BARRIER_F_Right">
+    <string name="filename" value="meshes/BARRIER_F_Right.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_concrete" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-WIRE_F_Catenary">
+    <string name="filename" value="meshes/WIRE_F_Catenary.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_copper" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-PIER_F_01">
+    <string name="filename" value="meshes/PIER_F_01.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_concrete" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-PIER_F_02">
+    <string name="filename" value="meshes/PIER_F_02.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_concrete" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-PIER_F_03">
+    <string name="filename" value="meshes/PIER_F_03.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_concrete" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-PIER_F_04">
+    <string name="filename" value="meshes/PIER_F_04.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_concrete" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-PIER_F_05">
+    <string name="filename" value="meshes/PIER_F_05.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_concrete" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-PIER_F_06">
+    <string name="filename" value="meshes/PIER_F_06.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_concrete" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-PIER_F_07">
+    <string name="filename" value="meshes/PIER_F_07.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_concrete" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-PIER_F_08">
+    <string name="filename" value="meshes/PIER_F_08.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_concrete" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-PIER_F_09">
+    <string name="filename" value="meshes/PIER_F_09.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_concrete" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-PIER_F_10">
+    <string name="filename" value="meshes/PIER_F_10.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_concrete" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-PIER_F_11">
+    <string name="filename" value="meshes/PIER_F_11.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_concrete" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-PIER_F_12">
+    <string name="filename" value="meshes/PIER_F_12.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_concrete" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-PIER_F_13">
+    <string name="filename" value="meshes/PIER_F_13.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_concrete" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-PIER_F_14">
+    <string name="filename" value="meshes/PIER_F_14.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_concrete" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-PIER_F_15">
+    <string name="filename" value="meshes/PIER_F_15.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_concrete" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-PIER_F_16">
+    <string name="filename" value="meshes/PIER_F_16.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_concrete" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-PIER_F_17">
+    <string name="filename" value="meshes/PIER_F_17.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_concrete" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-PIER_F_18">
+    <string name="filename" value="meshes/PIER_F_18.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_concrete" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-PIER_F_19">
+    <string name="filename" value="meshes/PIER_F_19.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_concrete" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-PIER_F_20">
+    <string name="filename" value="meshes/PIER_F_20.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_concrete" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-PIER_F_21">
+    <string name="filename" value="meshes/PIER_F_21.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_concrete" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-PIER_F_22">
+    <string name="filename" value="meshes/PIER_F_22.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_concrete" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-POLE_F_01">
+    <string name="filename" value="meshes/POLE_F_01.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_metal" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-POLE_F_02">
+    <string name="filename" value="meshes/POLE_F_02.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_metal" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-POLE_F_03">
+    <string name="filename" value="meshes/POLE_F_03.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_metal" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-POLE_F_04">
+    <string name="filename" value="meshes/POLE_F_04.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_metal" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-POLE_F_05">
+    <string name="filename" value="meshes/POLE_F_05.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_metal" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-POLE_F_06">
+    <string name="filename" value="meshes/POLE_F_06.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_metal" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-POLE_F_07">
+    <string name="filename" value="meshes/POLE_F_07.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_metal" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-POLE_F_08">
+    <string name="filename" value="meshes/POLE_F_08.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_metal" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-POLE_F_09">
+    <string name="filename" value="meshes/POLE_F_09.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_metal" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-POLE_F_10">
+    <string name="filename" value="meshes/POLE_F_10.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_metal" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-POLE_F_11">
+    <string name="filename" value="meshes/POLE_F_11.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_metal" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-POLE_F_12">
+    <string name="filename" value="meshes/POLE_F_12.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_metal" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-POLE_F_13">
+    <string name="filename" value="meshes/POLE_F_13.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_metal" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-POLE_F_14">
+    <string name="filename" value="meshes/POLE_F_14.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_metal" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-POLE_F_15">
+    <string name="filename" value="meshes/POLE_F_15.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_metal" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-POLE_F_16">
+    <string name="filename" value="meshes/POLE_F_16.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_metal" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-POLE_F_17">
+    <string name="filename" value="meshes/POLE_F_17.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_metal" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-POLE_F_18">
+    <string name="filename" value="meshes/POLE_F_18.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_metal" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-TX1_mast">
+    <string name="filename" value="meshes/TX1_mast.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_metal" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-TX1_antenna">
+    <string name="filename" value="meshes/TX1_antenna.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_metal" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-TX2_mast">
+    <string name="filename" value="meshes/TX2_mast.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_metal" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-TX2_antenna">
+    <string name="filename" value="meshes/TX2_antenna.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_metal" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-TX3_mast">
+    <string name="filename" value="meshes/TX3_mast.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_metal" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-TX3_antenna">
+    <string name="filename" value="meshes/TX3_antenna.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_metal" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-TX4_mast">
+    <string name="filename" value="meshes/TX4_mast.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_metal" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-TX4_antenna">
+    <string name="filename" value="meshes/TX4_antenna.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_metal" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-TX5_mast">
+    <string name="filename" value="meshes/TX5_mast.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_metal" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-TX5_antenna">
+    <string name="filename" value="meshes/TX5_antenna.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_metal" name="bsdf" />
+  </shape>
+</scene>
