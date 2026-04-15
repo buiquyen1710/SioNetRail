@@ -16,8 +16,10 @@ Hiện tại repository đã được chỉnh sang kịch bản tích hợp `uni
 - Kịch bản mặc định: `unified_3000m`
 - File cấu hình chính: `phase1_pipeline/config/config.yaml`
 - Output chính của kịch bản tích hợp: `phase1_pipeline/output_unified/`
-- Pipeline đang chạy ổn định theo nhánh procedural exporter `export_mitsuba_fallback.py`
-- Với kịch bản tích hợp hiện tại, pipeline không tự động sinh `.blend`; scene chuẩn để ray tracing là `scene.xml` + thư mục `meshes/`
+- Pipeline chạy được theo cả 2 nhánh:
+  - Blender -> `.blend` -> Mitsuba XML
+  - procedural exporter fallback nếu máy không có Blender
+- Với kịch bản tích hợp hiện tại, nếu máy có Blender thì pipeline có thể sinh `.blend` trực tiếp
 
 Lý do: `run_pipeline.py` chủ động bỏ qua nhánh Blender khi `scenario.type = unified_3000m`, vì phần dựng scene tích hợp hiện được hiện thực trực tiếp trong exporter procedural.
 
@@ -109,35 +111,41 @@ python -m phase1_pipeline.run_pipeline --config phase1_pipeline/config/config.ya
 
 ### Trạng thái hỗ trợ hiện tại
 
-Với `scenario.type = unified_3000m`, pipeline hiện không xuất `.blend` tự động.
+Với `scenario.type = unified_3000m`, source hiện đã hỗ trợ sinh `.blend` qua Blender.
 
-Điểm cần hiểu rõ:
-
-- `phase1_pipeline/config/config.yaml` vẫn có khóa `paths.blend_file`
-- nhưng `run_pipeline.py` đang bỏ qua bước Blender cho unified scene
-- scene tích hợp hiện được xem là “nguồn chuẩn” dưới dạng `scene.xml` và `meshes/*.obj`
-
-### Khi nào `.blend` có thể xuất được
-
-`.blend` hiện chỉ phù hợp với luồng cũ, tức khi:
-
-- dùng `phase1_pipeline/blender/generate_scene.py`
-- và cấu hình là các scene cũ kiểu open railway hoặc straight tunnel
-
-Ví dụ lệnh Blender của luồng cũ:
+Lệnh:
 
 ```bash
 blender --background --python phase1_pipeline/blender/generate_scene.py -- --config phase1_pipeline/config/config.yaml
 ```
 
-Nhưng với cấu hình `unified_3000m` hiện tại, lệnh trên chưa phản ánh đầy đủ hình học tích hợp 3000 m như procedural exporter.
+Output mặc định:
 
-### Kết luận thực tế
+```text
+phase1_pipeline/output_unified/railway_scene_unified.blend
+```
 
-- Nếu mục tiêu là ray tracing đúng với kịch bản tích hợp hiện tại: dùng `scene.xml` trong `output_unified/`
-- Nếu mục tiêu là cần `.blend` như artifact nghiên cứu: cần mở rộng thêm `phase1_pipeline/blender/generate_scene.py` để dựng đúng toàn bộ module A-F
+Sau khi có `.blend`, có thể xuất Mitsuba XML bằng:
 
-README này phản ánh đúng trạng thái source hiện tại, không giả định `.blend` đã sẵn sàng khi thực tế chưa có.
+```bash
+blender phase1_pipeline/output_unified/railway_scene_unified.blend --background --python phase1_pipeline/export/export_mitsuba.py -- --config phase1_pipeline/config/config.yaml
+```
+
+### Khi nào vẫn dùng procedural fallback
+
+Nếu máy không có Blender hoặc Blender không nằm trong `PATH`, `run_pipeline.py` sẽ tự rơi về:
+
+```bash
+python -m phase1_pipeline.export.export_mitsuba_fallback --config phase1_pipeline/config/config.yaml
+```
+
+Khi đó vẫn sinh được:
+
+- `scene.xml`
+- `meshes/*.obj`
+- `scene_metadata.json`
+
+nhưng sẽ không có `.blend`.
 
 ## Các file output của kịch bản tích hợp
 
@@ -147,6 +155,7 @@ Thư mục chính:
 
 ### Output hình học
 
+- `railway_scene_unified.blend`: file Blender của scene tích hợp, nếu chạy bằng Blender
 - `scene.xml`: scene Mitsuba dùng cho ray tracing
 - `scene_metadata.json`: metadata của scene, module, gNB, trajectory RX
 - `meshes/*.obj`: mesh thành phần của scene
@@ -238,7 +247,11 @@ pip install mitsuba sionna-rt
 - xóa thủ công thư mục `phase1_pipeline/output_unified/`
 - chạy lại pipeline
 
-### Muốn dùng Blender cho scene tích hợp
+### Muốn sinh `.blend` cho scene tích hợp
 
-- cần bổ sung lại `phase1_pipeline/blender/generate_scene.py`
-- hiện README chỉ mô tả trung thực trạng thái source hiện hành: unified scene đang chuẩn hóa theo procedural exporter
+- cài Blender và đảm bảo `blender.exe` có trong `PATH`
+- sau đó chạy:
+
+```bash
+python -m phase1_pipeline.run_pipeline --config phase1_pipeline/config/config.yaml
+```

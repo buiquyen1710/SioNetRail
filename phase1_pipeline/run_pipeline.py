@@ -8,7 +8,6 @@ from pathlib import Path
 from shutil import which
 
 from phase1_pipeline.common import load_config, repo_root, resolve_output_paths
-from phase1_pipeline.scenarios import is_unified_scenario
 
 
 def safe_text(value: object) -> str:
@@ -47,15 +46,7 @@ def main() -> None:
     repo = repo_root()
     config = load_config(config_path)
     output_paths = resolve_output_paths(config)
-    use_procedural_scene = is_unified_scenario(config)
-
-    if use_procedural_scene:
-        print("Unified 3000 m scenario detected. Using direct procedural Mitsuba export for the integrated scene.")
-        run_command(
-            [sys.executable, "-m", "phase1_pipeline.export.export_mitsuba_fallback", "--config", str(config_path)],
-            cwd=repo,
-        )
-    elif not args.skip_blender and blender_available(args.blender_executable):
+    if not args.skip_blender and blender_available(args.blender_executable):
         run_command(
             [
                 args.blender_executable,
