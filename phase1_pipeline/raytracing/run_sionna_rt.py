@@ -528,12 +528,6 @@ def export_snapshot_visualizations(
     prefix = snapshot_file_prefix(station, index)
     tx_pos = station_ray_origin(station)
     output_dir = output_paths["mitsuba_xml"].parent
-    scene_render_path = None
-    if Path(output_paths["mitsuba_xml"]).exists():
-        try:
-            scene_render_path = prepare_ascii_safe_scene(output_paths)
-        except Exception:
-            scene_render_path = Path(output_paths["mitsuba_xml"])
     for key, data in snapshot_data.items():
         time_s = float(data["time_s"])
         visual_paths = data["paths"]
@@ -544,15 +538,6 @@ def export_snapshot_visualizations(
             output_path=output_dir / f"{prefix}_rays_3d_{key}_t{time_s:.3f}s.png",
             title=f"{prefix} 3D Ray Paths (t = {time_s:.3f}s)",
         )
-        if scene_render_path is not None:
-            export_rays_3d_with_mitsuba(
-                mitsuba_xml_path=scene_render_path,
-                tx_position=tx_pos,
-                rx_position=data["rx_pos"],
-                paths=visual_paths,
-                output_path=output_dir / f"{prefix}_rays_scene_{key}_t{time_s:.3f}s.png",
-                title=f"{prefix} Scene with Ray Paths (t = {time_s:.3f}s)",
-            )
         export_sample_style_scene(
             tx_position=tx_pos,
             rx_position=data["rx_pos"],

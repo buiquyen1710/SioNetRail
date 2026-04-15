@@ -13,16 +13,26 @@
       <integer name="height" value="576" />
     </film>
   </sensor>
-  <bsdf type="diffuse" id="mat-itu_concrete" />
-  <bsdf type="diffuse" id="mat-itu_metal" />
-  <bsdf type="diffuse" id="mat-itu_glass" />
-  <bsdf type="diffuse" id="mat-itu_ground" />
-  <bsdf type="diffuse" id="mat-itu_granite" />
-  <bsdf type="diffuse" id="mat-itu_copper" />
+  <bsdf type="itu-radio-material" id="mat-itu_concrete">
+    <string name="type" value="concrete" />
+    <float name="thickness" value="1.0" />
+  </bsdf>
+  <bsdf type="itu-radio-material" id="mat-itu_metal">
+    <string name="type" value="metal" />
+    <float name="thickness" value="1.0" />
+  </bsdf>
+  <bsdf type="itu-radio-material" id="mat-itu_glass">
+    <string name="type" value="glass" />
+    <float name="thickness" value="1.0" />
+  </bsdf>
+  <bsdf type="itu-radio-material" id="mat-itu_marble">
+    <string name="type" value="marble" />
+    <float name="thickness" value="1.0" />
+  </bsdf>
   <shape type="obj" id="mesh-GROUND_OUTDOOR">
     <string name="filename" value="meshes/GROUND_OUTDOOR.obj" />
     <boolean name="face_normals" value="true" />
-    <ref id="mat-itu_ground" name="bsdf" />
+    <ref id="mat-itu_concrete" name="bsdf" />
   </shape>
   <shape type="obj" id="mesh-VIADUCT_A_Deck">
     <string name="filename" value="meshes/VIADUCT_A_Deck.obj" />
@@ -67,7 +77,7 @@
   <shape type="obj" id="mesh-WIRE_A_Catenary">
     <string name="filename" value="meshes/WIRE_A_Catenary.obj" />
     <boolean name="face_normals" value="true" />
-    <ref id="mat-itu_copper" name="bsdf" />
+    <ref id="mat-itu_metal" name="bsdf" />
   </shape>
   <shape type="obj" id="mesh-PIER_A_01">
     <string name="filename" value="meshes/PIER_A_01.obj" />
@@ -227,7 +237,7 @@
   <shape type="obj" id="mesh-WIRE_B_Catenary">
     <string name="filename" value="meshes/WIRE_B_Catenary.obj" />
     <boolean name="face_normals" value="true" />
-    <ref id="mat-itu_copper" name="bsdf" />
+    <ref id="mat-itu_metal" name="bsdf" />
   </shape>
   <shape type="obj" id="mesh-POLE_B_01">
     <string name="filename" value="meshes/POLE_B_01.obj" />
@@ -302,32 +312,32 @@
   <shape type="obj" id="mesh-STEEPWALL_C_Left_1">
     <string name="filename" value="meshes/STEEPWALL_C_Left_1.obj" />
     <boolean name="face_normals" value="true" />
-    <ref id="mat-itu_granite" name="bsdf" />
+    <ref id="mat-itu_marble" name="bsdf" />
   </shape>
   <shape type="obj" id="mesh-STEEPWALL_C_Left_2">
     <string name="filename" value="meshes/STEEPWALL_C_Left_2.obj" />
     <boolean name="face_normals" value="true" />
-    <ref id="mat-itu_granite" name="bsdf" />
+    <ref id="mat-itu_marble" name="bsdf" />
   </shape>
   <shape type="obj" id="mesh-STEEPWALL_C_Left_3">
     <string name="filename" value="meshes/STEEPWALL_C_Left_3.obj" />
     <boolean name="face_normals" value="true" />
-    <ref id="mat-itu_granite" name="bsdf" />
+    <ref id="mat-itu_marble" name="bsdf" />
   </shape>
   <shape type="obj" id="mesh-STEEPWALL_C_Right_1">
     <string name="filename" value="meshes/STEEPWALL_C_Right_1.obj" />
     <boolean name="face_normals" value="true" />
-    <ref id="mat-itu_granite" name="bsdf" />
+    <ref id="mat-itu_marble" name="bsdf" />
   </shape>
   <shape type="obj" id="mesh-STEEPWALL_C_Right_2">
     <string name="filename" value="meshes/STEEPWALL_C_Right_2.obj" />
     <boolean name="face_normals" value="true" />
-    <ref id="mat-itu_granite" name="bsdf" />
+    <ref id="mat-itu_marble" name="bsdf" />
   </shape>
   <shape type="obj" id="mesh-STEEPWALL_C_Right_3">
     <string name="filename" value="meshes/STEEPWALL_C_Right_3.obj" />
     <boolean name="face_normals" value="true" />
-    <ref id="mat-itu_granite" name="bsdf" />
+    <ref id="mat-itu_marble" name="bsdf" />
   </shape>
   <shape type="obj" id="mesh-TUNNEL_D_Floor">
     <string name="filename" value="meshes/TUNNEL_D_Floor.obj" />
@@ -387,7 +397,7 @@
   <shape type="obj" id="mesh-WIRE_E_Catenary">
     <string name="filename" value="meshes/WIRE_E_Catenary.obj" />
     <boolean name="face_normals" value="true" />
-    <ref id="mat-itu_copper" name="bsdf" />
+    <ref id="mat-itu_metal" name="bsdf" />
   </shape>
   <shape type="obj" id="mesh-POLE_E_01">
     <string name="filename" value="meshes/POLE_E_01.obj" />
@@ -407,32 +417,32 @@
   <shape type="obj" id="mesh-STEEPWALL_E_Left_1">
     <string name="filename" value="meshes/STEEPWALL_E_Left_1.obj" />
     <boolean name="face_normals" value="true" />
-    <ref id="mat-itu_granite" name="bsdf" />
+    <ref id="mat-itu_marble" name="bsdf" />
   </shape>
   <shape type="obj" id="mesh-STEEPWALL_E_Left_2">
     <string name="filename" value="meshes/STEEPWALL_E_Left_2.obj" />
     <boolean name="face_normals" value="true" />
-    <ref id="mat-itu_granite" name="bsdf" />
+    <ref id="mat-itu_marble" name="bsdf" />
   </shape>
   <shape type="obj" id="mesh-STEEPWALL_E_Left_3">
     <string name="filename" value="meshes/STEEPWALL_E_Left_3.obj" />
     <boolean name="face_normals" value="true" />
-    <ref id="mat-itu_granite" name="bsdf" />
+    <ref id="mat-itu_marble" name="bsdf" />
   </shape>
   <shape type="obj" id="mesh-STEEPWALL_E_Right_1">
     <string name="filename" value="meshes/STEEPWALL_E_Right_1.obj" />
     <boolean name="face_normals" value="true" />
-    <ref id="mat-itu_granite" name="bsdf" />
+    <ref id="mat-itu_marble" name="bsdf" />
   </shape>
   <shape type="obj" id="mesh-STEEPWALL_E_Right_2">
     <string name="filename" value="meshes/STEEPWALL_E_Right_2.obj" />
     <boolean name="face_normals" value="true" />
-    <ref id="mat-itu_granite" name="bsdf" />
+    <ref id="mat-itu_marble" name="bsdf" />
   </shape>
   <shape type="obj" id="mesh-STEEPWALL_E_Right_3">
     <string name="filename" value="meshes/STEEPWALL_E_Right_3.obj" />
     <boolean name="face_normals" value="true" />
-    <ref id="mat-itu_granite" name="bsdf" />
+    <ref id="mat-itu_marble" name="bsdf" />
   </shape>
   <shape type="obj" id="mesh-VIADUCT_F_Deck">
     <string name="filename" value="meshes/VIADUCT_F_Deck.obj" />
@@ -477,7 +487,7 @@
   <shape type="obj" id="mesh-WIRE_F_Catenary">
     <string name="filename" value="meshes/WIRE_F_Catenary.obj" />
     <boolean name="face_normals" value="true" />
-    <ref id="mat-itu_copper" name="bsdf" />
+    <ref id="mat-itu_metal" name="bsdf" />
   </shape>
   <shape type="obj" id="mesh-PIER_F_01">
     <string name="filename" value="meshes/PIER_F_01.obj" />

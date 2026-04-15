@@ -98,7 +98,11 @@ def write_obj(path: Path, vertices: Iterable[Tuple[float, float, float]], faces:
 
 
 def material_bsdf(bsdf_id: str) -> ET.Element:
-    return ET.Element("bsdf", {"type": "diffuse", "id": bsdf_id})
+    material_type = bsdf_id.replace("mat-itu_", "")
+    bsdf = ET.Element("bsdf", {"type": "itu-radio-material", "id": bsdf_id})
+    ET.SubElement(bsdf, "string", {"name": "type", "value": material_type})
+    ET.SubElement(bsdf, "float", {"name": "thickness", "value": "1.0"})
+    return bsdf
 
 
 def add_shape(root: ET.Element, shape_id: str, filename: Path, bsdf_id: str, xml_dir: Path) -> None:
@@ -151,7 +155,7 @@ def build_unified_scene(config: Dict, output_paths: Dict[str, Path]) -> None:
     train_cfg = config["train"]
     include_train_in_rt_scene = bool(config.get("ray_tracing", {}).get("include_train_in_rt_scene", False))
 
-    append_box(objects, mesh_dir, "GROUND_OUTDOOR", (1500.0, 0.0, -0.3), (3000.0, 200.0, 0.6), "mat-itu_ground")
+    append_box(objects, mesh_dir, "GROUND_OUTDOOR", (1500.0, 0.0, -0.3), (3000.0, 200.0, 0.6), "mat-itu_concrete")
 
     # Module A
     append_box(objects, mesh_dir, "VIADUCT_A_Deck", (350.0, 0.0, 11.0), (700.0, 12.0, 2.0), "mat-itu_concrete")
@@ -162,7 +166,7 @@ def build_unified_scene(config: Dict, output_paths: Dict[str, Path]) -> None:
     append_box(objects, mesh_dir, "PARAPET_A_Right", (350.0, 5.875, 12.6), (700.0, 0.25, 1.2), "mat-itu_concrete")
     append_box(objects, mesh_dir, "BARRIER_A_Left", (350.0, -3.6, 13.75), (700.0, 0.20, 3.5), "mat-itu_concrete")
     append_box(objects, mesh_dir, "BARRIER_A_Right", (350.0, 3.6, 13.75), (700.0, 0.20, 3.5), "mat-itu_concrete")
-    append_box(objects, mesh_dir, "WIRE_A_Catenary", (350.0, -0.2, 17.5), (700.0, 0.02, 0.02), "mat-itu_copper")
+    append_box(objects, mesh_dir, "WIRE_A_Catenary", (350.0, -0.2, 17.5), (700.0, 0.02, 0.02), "mat-itu_metal")
     for idx in range(14):
         x = 50.0 * (idx + 1)
         append_box(objects, mesh_dir, f"PIER_A_{idx + 1:02d}", (x, 0.0, 5.0), (3.0, 6.0, 10.0), "mat-itu_concrete")
@@ -176,7 +180,7 @@ def build_unified_scene(config: Dict, output_paths: Dict[str, Path]) -> None:
     append_box(objects, mesh_dir, "RAIL_B_Right", (900.0, 0.7175, 0.086), (400.0, 0.07, 0.172), "mat-itu_metal")
     append_box(objects, mesh_dir, "BARRIER_B_Left", (900.0, -3.6, 1.75), (400.0, 0.20, 3.5), "mat-itu_concrete")
     append_box(objects, mesh_dir, "BARRIER_B_Right", (900.0, 3.6, 1.75), (400.0, 0.20, 3.5), "mat-itu_concrete")
-    append_box(objects, mesh_dir, "WIRE_B_Catenary", (900.0, -0.2, 5.5), (400.0, 0.02, 0.02), "mat-itu_copper")
+    append_box(objects, mesh_dir, "WIRE_B_Catenary", (900.0, -0.2, 5.5), (400.0, 0.02, 0.02), "mat-itu_metal")
     for idx in range(7):
         append_cylinder(objects, mesh_dir, f"POLE_B_{idx + 1:02d}", (700.0 + 60.0 * idx, -2.5, 3.5), 0.15, 7.0, "mat-itu_metal")
 
@@ -190,7 +194,7 @@ def build_unified_scene(config: Dict, output_paths: Dict[str, Path]) -> None:
     append_cylinder(objects, mesh_dir, "POLE_C_02", (1180.0, -2.5, 3.5), 0.15, 7.0, "mat-itu_metal")
     for side, y in (("Left", -5.25), ("Right", 5.25)):
         for step_idx, (x, height) in enumerate(((1175.0, 3.0), (1225.0, 5.0), (1275.0, 7.5)), start=1):
-            append_box(objects, mesh_dir, f"STEEPWALL_C_{side}_{step_idx}", (x, y, height / 2.0), (50.0, 0.5, height), "mat-itu_granite")
+            append_box(objects, mesh_dir, f"STEEPWALL_C_{side}_{step_idx}", (x, y, height / 2.0), (50.0, 0.5, height), "mat-itu_marble")
 
     # Module D
     append_box(objects, mesh_dir, "TUNNEL_D_Floor", (1450.0, 0.0, -0.25), (300.0, 10.0, 0.5), "mat-itu_concrete")
@@ -206,12 +210,12 @@ def build_unified_scene(config: Dict, output_paths: Dict[str, Path]) -> None:
     append_box(objects, mesh_dir, "RAIL_E_Right", (1750.0, 0.7175, 0.086), (300.0, 0.07, 0.172), "mat-itu_metal")
     append_box(objects, mesh_dir, "BARRIER_E_Left", (1825.0, -3.6, 1.75), (150.0, 0.20, 3.5), "mat-itu_concrete")
     append_box(objects, mesh_dir, "BARRIER_E_Right", (1825.0, 3.6, 1.75), (150.0, 0.20, 3.5), "mat-itu_concrete")
-    append_box(objects, mesh_dir, "WIRE_E_Catenary", (1825.0, -0.2, 5.5), (150.0, 0.02, 0.02), "mat-itu_copper")
+    append_box(objects, mesh_dir, "WIRE_E_Catenary", (1825.0, -0.2, 5.5), (150.0, 0.02, 0.02), "mat-itu_metal")
     for idx, x in enumerate((1770.0, 1830.0, 1890.0), start=1):
         append_cylinder(objects, mesh_dir, f"POLE_E_{idx:02d}", (x, -2.5, 3.5), 0.15, 7.0, "mat-itu_metal")
     for side, y in (("Left", -5.25), ("Right", 5.25)):
         for step_idx, (x, height) in enumerate(((1625.0, 7.5), (1675.0, 5.0), (1725.0, 3.0)), start=1):
-            append_box(objects, mesh_dir, f"STEEPWALL_E_{side}_{step_idx}", (x, y, height / 2.0), (50.0, 0.5, height), "mat-itu_granite")
+            append_box(objects, mesh_dir, f"STEEPWALL_E_{side}_{step_idx}", (x, y, height / 2.0), (50.0, 0.5, height), "mat-itu_marble")
 
     # Module F
     append_box(objects, mesh_dir, "VIADUCT_F_Deck", (2450.0, 0.0, 11.0), (1100.0, 12.0, 2.0), "mat-itu_concrete")
@@ -222,7 +226,7 @@ def build_unified_scene(config: Dict, output_paths: Dict[str, Path]) -> None:
     append_box(objects, mesh_dir, "PARAPET_F_Right", (2450.0, 5.875, 12.6), (1100.0, 0.25, 1.2), "mat-itu_concrete")
     append_box(objects, mesh_dir, "BARRIER_F_Left", (2450.0, -3.6, 13.75), (1100.0, 0.20, 3.5), "mat-itu_concrete")
     append_box(objects, mesh_dir, "BARRIER_F_Right", (2450.0, 3.6, 13.75), (1100.0, 0.20, 3.5), "mat-itu_concrete")
-    append_box(objects, mesh_dir, "WIRE_F_Catenary", (2450.0, -0.2, 17.5), (1100.0, 0.02, 0.02), "mat-itu_copper")
+    append_box(objects, mesh_dir, "WIRE_F_Catenary", (2450.0, -0.2, 17.5), (1100.0, 0.02, 0.02), "mat-itu_metal")
     for idx in range(22):
         x = 1925.0 + 50.0 * idx
         append_box(objects, mesh_dir, f"PIER_F_{idx + 1:02d}", (x, 0.0, 5.0), (3.0, 6.0, 10.0), "mat-itu_concrete")
@@ -253,7 +257,7 @@ def build_unified_scene(config: Dict, output_paths: Dict[str, Path]) -> None:
     ET.SubElement(film, "integer", {"name": "width", "value": "1024"})
     ET.SubElement(film, "integer", {"name": "height", "value": "576"})
 
-    for bsdf_id in ("mat-itu_concrete", "mat-itu_metal", "mat-itu_glass", "mat-itu_ground", "mat-itu_granite", "mat-itu_copper"):
+    for bsdf_id in ("mat-itu_concrete", "mat-itu_metal", "mat-itu_glass", "mat-itu_marble"):
         root.append(material_bsdf(bsdf_id))
     for name, path, bsdf_id in objects:
         add_shape(root, name, path, bsdf_id, xml_dir)
@@ -295,7 +299,7 @@ def build_legacy_scene(config: Dict, output_paths: Dict[str, Path]) -> None:
 
     objects: List[Tuple[str, Path, str]] = []
     if not is_tunnel_scenario(config):
-        append_box(objects, mesh_dir, "ground", (0.0, 0.0, -0.05), (length, width, 0.1), "mat-itu_ground")
+        append_box(objects, mesh_dir, "ground", (0.0, 0.0, -0.05), (length, width, 0.1), "mat-itu_concrete")
 
     rail_half = gauge / 2.0
     append_box(objects, mesh_dir, "rail_left", (0.0, rail_half, rail_height / 2.0), (length, rail_width, rail_height), "mat-itu_metal")
@@ -348,7 +352,7 @@ def build_legacy_scene(config: Dict, output_paths: Dict[str, Path]) -> None:
     film = ET.SubElement(sensor, "film", {"type": "hdrfilm"})
     ET.SubElement(film, "integer", {"name": "width", "value": "800"})
     ET.SubElement(film, "integer", {"name": "height", "value": "450"})
-    for bsdf_id in ("mat-itu_concrete", "mat-itu_metal", "mat-itu_glass", "mat-itu_ground"):
+    for bsdf_id in ("mat-itu_concrete", "mat-itu_metal", "mat-itu_glass"):
         root.append(material_bsdf(bsdf_id))
     for name, path, bsdf_id in objects:
         add_shape(root, name, path, bsdf_id, xml_dir)

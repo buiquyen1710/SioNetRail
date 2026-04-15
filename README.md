@@ -1,166 +1,276 @@
 # SioNetRail
 
-Mô phỏng kênh truyền 5G mmWave 30 GHz cho đường sắt tốc độ cao bằng pipeline:
+Mo phong kenh truyen 5G mmWave 30 GHz cho duong sat toc do cao bang scene 3D + Sionna RT.
 
-1. Khai báo kịch bản trong `phase1_pipeline/config/config.yaml`
-2. Sinh scene hình học
-3. Xuất scene Mitsuba `scene.xml` + `meshes/*.obj`
-4. Ray tracing cho từng gNB
-5. Xuất trace CSV theo schema dùng cho ns-3/SioLENA
-6. Xuất biểu đồ và ảnh kiểm tra
+Repository hien tai da duoc canh chinh cho kich ban `unified_3000m`:
 
-Hiện tại repository đã được chỉnh sang kịch bản tích hợp `unified_3000m`: một scene 3000 m duy nhất, 5 gNB, một quỹ đạo RX xuyên suốt toàn tuyến.
+- 1 scene dai 3000 m
+- 5 tram gNB `TX1..TX5`
+- 1 quy dao RX chay xuyen suot toan tuyen
+- output MPC CSV phuc vu ns-3/SioLENA
 
-## Trạng thái hiện tại của source
+README nay tap trung vao muc tieu: chay du an bang backend `sionna` thuc su, khong phai `fallback`.
 
-- Kịch bản mặc định: `unified_3000m`
-- File cấu hình chính: `phase1_pipeline/config/config.yaml`
-- Output chính của kịch bản tích hợp: `phase1_pipeline/output_unified/`
-- Pipeline chạy được theo cả 2 nhánh:
-  - Blender -> `.blend` -> Mitsuba XML
-  - procedural exporter fallback nếu máy không có Blender
-- Với kịch bản tích hợp hiện tại, nếu máy có Blender thì pipeline có thể sinh `.blend` trực tiếp
+## 1. Trang thai da xac minh
 
-Lý do: `run_pipeline.py` chủ động bỏ qua nhánh Blender khi `scenario.type = unified_3000m`, vì phần dựng scene tích hợp hiện được hiện thực trực tiếp trong exporter procedural.
+Da kiem tra tren may hien tai:
 
-## Yêu cầu môi trường
+- project path: `C:\Users\asela\OneDrive\Members\K67.BuiVanQuyen\SioNetRail`
+- Python dang dung: `C:\Users\asela\anaconda3\python.exe`
+- `mitsuba`, `sionna`, `drjit`: import duoc
+- scene `output_unified/scene.xml` da load duoc bang `sionna.rt.load_scene()`
+- da xac minh chay tuan tu backend `sionna` cho ca 5 tram `TX1..TX5` voi tap mau ngan
 
-### Bắt buộc
+Luu y:
 
-- Python 3.10+ khuyến nghị
-- `pyyaml`
-- `numpy`
-- `matplotlib`
+- Full run 5 tram bang Sionna RT co the rat lau.
+- Neu log co `backend=fallback` thi ban chua chay ray tracing vat ly that.
 
-Cài nhanh:
+## 2. Cau truc pipeline
 
-```bash
-pip install pyyaml numpy matplotlib
+Pipeline tong quat:
+
+1. Doc `phase1_pipeline/config/config.yaml`
+2. Sinh scene Mitsuba `scene.xml` va `meshes/*.obj`
+3. Nap scene vao `sionna.rt`
+4. Ray tracing rieng cho tung gNB
+5. Xuat MPC CSV, bieu do Doppler, so luong path, anh 3D ray
+
+Entrypoint chinh:
+
+- Full pipeline: `python -m phase1_pipeline.run_pipeline --config phase1_pipeline/config/config.yaml`
+- Export scene procedural: `python -m phase1_pipeline.export.export_mitsuba_fallback --config phase1_pipeline/config/config.yaml`
+- Ray tracing: `python -m phase1_pipeline.raytracing.run_sionna_rt --config phase1_pipeline/config/config.yaml`
+
+## 3. Moi truong khuyen nghi
+
+### 3.1. Neu may da co moi truong dang chay duoc
+
+Uu tien dung dung interpreter dang hoat dong va da import duoc:
+
+```powershell
+python --version
+python -c "import mitsuba, sionna, drjit; print('OK')"
 ```
 
-### Tùy chọn nhưng nên có
+### 3.2. Neu ban muon tao moi moi truong
 
-- `mitsuba`
-- `sionna-rt`
-- LLVM cho Mitsuba/Sionna RT trên Windows
-- Blender 4.x nếu muốn dùng nhánh Blender cho các scene cũ
+Khuyen nghi Python `3.10` hoac `3.11` de de tuong thich hon voi ecosystem Sionna/Mitsuba.
 
-Ví dụ:
+Vi du voi conda:
 
-```bash
-pip install mitsuba sionna-rt
+```powershell
+conda create -n sionetrail python=3.11 -y
+conda activate sionetrail
+pip install pyyaml numpy matplotlib mitsuba sionna-rt
 ```
 
-## Cách chạy nhanh
+Neu can Blender:
 
-Chạy full pipeline cho kịch bản tích hợp:
+- cai Blender 4.x
+- dam bao `blender.exe` co trong `PATH`
 
-```bash
-python -m phase1_pipeline.run_pipeline --config phase1_pipeline/config/config.yaml
+### 3.3. Kiem tra nhanh dependency
+
+```powershell
+@'
+mods = ["mitsuba", "sionna", "drjit"]
+for m in mods:
+    try:
+        __import__(m)
+        print(f"{m}: OK")
+    except Exception as e:
+        print(f"{m}: FAIL -> {type(e).__name__}: {e}")
+'@ | python -
 ```
 
-Nếu muốn ép dùng fallback solver:
+## 4. Luu y quan trong de chay duoc Sionna RT that
 
-```bash
-python -m phase1_pipeline.run_pipeline --config phase1_pipeline/config/config.yaml --force-fallback
+Project nay da duoc sua de phu hop voi version `sionna.rt` dang co tren may:
+
+- Scene exporter procedural da chuyen BSDF sang schema ma `sionna.rt` chap nhan.
+- Cac material khong hop le o `30 GHz` da duoc map sang material ITU hop le:
+  - ground -> concrete
+  - granite -> marble
+  - copper -> metal
+- Visualization bang plain Mitsuba cho `itu-radio-material` da duoc tach khoi luong solver, tranh lam hong variant/plugin state cua Sionna.
+
+He qua:
+
+- anh `*_rays_scene_*.png` khong con la output chinh trong luong ray tracing
+- anh `*_rays_3d_*.png` va `*_coverage_*.png` van duoc xuat binh thuong
+
+## 5. Quy trinh chay chi tiet
+
+Tat ca lenh ben duoi duoc chay trong thu muc goc project:
+
+```powershell
+cd C:\Users\asela\OneDrive\Members\K67.BuiVanQuyen\SioNetRail
 ```
 
-Pipeline trên sẽ:
+### Buoc 1. Kiem tra config dang su dung
 
-1. Đọc `config.yaml`
-2. Sinh scene tích hợp 3000 m ra `output_unified/scene.xml` và `output_unified/meshes/`
-3. Chạy ray tracing riêng cho từng gNB `TX1..TX5`
-4. Xuất 5 file CSV MPC theo cùng chuỗi timestamp
-5. Xuất biểu đồ Doppler, số path và ảnh trực quan hóa
+Config mac dinh:
 
-## Chạy từng bước
+`phase1_pipeline/config/config.yaml`
 
-### 1. Sinh scene Mitsuba
+Kiem tra nhanh:
 
-Kịch bản tích hợp hiện tại dùng procedural export:
+```powershell
+Get-Content phase1_pipeline\config\config.yaml
+```
 
-```bash
+Nhung tham so quan trong hien tai:
+
+- `scenario.type: unified_3000m`
+- `simulation.frequency_hz: 30000000000.0`
+- `ray_tracing.max_depth: 6`
+- `ray_tracing.max_num_paths: 4000`
+- `ray_tracing.samples_per_src: 3000`
+
+### Buoc 2. Sinh lai scene Mitsuba
+
+Lenh:
+
+```powershell
 python -m phase1_pipeline.export.export_mitsuba_fallback --config phase1_pipeline/config/config.yaml
 ```
 
-Output:
+Ban phai thay file:
 
 - `phase1_pipeline/output_unified/scene.xml`
 - `phase1_pipeline/output_unified/meshes/*.obj`
 - `phase1_pipeline/output_unified/scene_metadata.json`
 
-### 2. Chạy ray tracing
+### Buoc 3. Kiem tra scene co nap duoc vao Sionna RT khong
 
-```bash
+Buoc nay rat quan trong. Neu khong qua buoc nay, full run se roi ve `fallback`.
+
+```powershell
+@'
+import os, sys
+from pathlib import Path
+
+candidates = [
+    Path("C:/Program Files/LLVM/bin/LLVM-C.dll"),
+    Path("C:/Program Files (x86)/LLVM/bin/LLVM-C.dll"),
+    Path(sys.executable).resolve().parent / "Library" / "bin" / "LLVM-C.dll",
+    Path(sys.executable).resolve().parent / "lib" / "LLVM-C.dll",
+]
+
+conda_prefix = os.environ.get("CONDA_PREFIX")
+if conda_prefix:
+    candidates.append(Path(conda_prefix) / "Library" / "bin" / "LLVM-C.dll")
+
+for p in candidates:
+    if p.exists():
+        os.environ["DRJIT_LIBLLVM_PATH"] = str(p)
+        break
+
+from sionna.rt import load_scene
+scene = load_scene(r"phase1_pipeline/output_unified/scene.xml", merge_shapes=False)
+print("load_scene: OK")
+print("num objects:", len(scene.objects))
+'@ | python -
+```
+
+Neu thanh cong, ban se thay:
+
+```text
+load_scene: OK
+```
+
+### Buoc 4. Kiem tra backend `sionna` bang bai test ngan
+
+Day la bai test khuyen nghi truoc khi full run, vi full run rat lau.
+
+```powershell
+@'
+from phase1_pipeline.common import load_config, resolve_output_paths
+from phase1_pipeline.raytracing.run_sionna_rt import fallback_trajectory_samples, run_sionna_backend
+from phase1_pipeline.scenarios import all_base_stations, station_label
+
+config = load_config("phase1_pipeline/config/config.yaml")
+output_paths = resolve_output_paths(config)
+samples = fallback_trajectory_samples(config)
+test_samples = [samples[0], samples[len(samples)//2], samples[-1]]
+
+for index, station in enumerate(all_base_stations(config)):
+    label = station_label(station, index)
+    summary = run_sionna_backend(config, output_paths, station, index, test_samples)
+    print(label, "backend=sionna", "samples=", len(summary))
+'@ | python -
+```
+
+Ket qua mong doi:
+
+```text
+TX1 backend=sionna
+TX2 backend=sionna
+TX3 backend=sionna
+TX4 backend=sionna
+TX5 backend=sionna
+```
+
+Neu buoc nay qua, kha nang cao la full run cung se dung backend that.
+
+### Buoc 5. Chay ray tracing day du bang Sionna RT
+
+Lenh chinh:
+
+```powershell
 python -m phase1_pipeline.raytracing.run_sionna_rt --config phase1_pipeline/config/config.yaml
 ```
 
-Hoặc:
+Ban khong duoc thay `--force-fallback`.
 
-```bash
-python -m phase1_pipeline.raytracing.run_sionna_rt --config phase1_pipeline/config/config.yaml --force-fallback
+Trong log, moi tram phai co dang:
+
+```text
+[TX1] backend=sionna ...
+[TX2] backend=sionna ...
+[TX3] backend=sionna ...
+[TX4] backend=sionna ...
+[TX5] backend=sionna ...
 ```
 
-### 3. Chạy toàn bộ pipeline
+Neu log ghi `backend=fallback` thi ray tracing vat ly that da that bai tai tram do.
 
-```bash
+### Buoc 6. Chay full pipeline neu muon ca scene export + RT trong 1 lenh
+
+```powershell
 python -m phase1_pipeline.run_pipeline --config phase1_pipeline/config/config.yaml
 ```
 
-## Cách xuất file `.blend`
+Lenh nay:
 
-### Trạng thái hỗ trợ hiện tại
+1. Sinh scene
+2. Xuat Mitsuba XML
+3. Chay Sionna RT
+4. Xuat CSV va hinh
 
-Với `scenario.type = unified_3000m`, source hiện đã hỗ trợ sinh `.blend` qua Blender.
+### Buoc 7. Chay fallback co chu dich de doi chieu
 
-Lệnh:
+Chi dung khi ban muon so sanh backend:
 
-```bash
-blender --background --python phase1_pipeline/blender/generate_scene.py -- --config phase1_pipeline/config/config.yaml
+```powershell
+python -m phase1_pipeline.raytracing.run_sionna_rt --config phase1_pipeline/config/config.yaml --force-fallback
 ```
 
-Output mặc định:
+## 6. Output sau khi chay
 
-```text
-phase1_pipeline/output_unified/railway_scene_unified.blend
-```
-
-Sau khi có `.blend`, có thể xuất Mitsuba XML bằng:
-
-```bash
-blender phase1_pipeline/output_unified/railway_scene_unified.blend --background --python phase1_pipeline/export/export_mitsuba.py -- --config phase1_pipeline/config/config.yaml
-```
-
-### Khi nào vẫn dùng procedural fallback
-
-Nếu máy không có Blender hoặc Blender không nằm trong `PATH`, `run_pipeline.py` sẽ tự rơi về:
-
-```bash
-python -m phase1_pipeline.export.export_mitsuba_fallback --config phase1_pipeline/config/config.yaml
-```
-
-Khi đó vẫn sinh được:
-
-- `scene.xml`
-- `meshes/*.obj`
-- `scene_metadata.json`
-
-nhưng sẽ không có `.blend`.
-
-## Các file output của kịch bản tích hợp
-
-Thư mục chính:
+Thu muc chinh:
 
 `phase1_pipeline/output_unified/`
 
-### Output hình học
+### 6.1. Output hinh hoc
 
-- `railway_scene_unified.blend`: file Blender của scene tích hợp, nếu chạy bằng Blender
-- `scene.xml`: scene Mitsuba dùng cho ray tracing
-- `scene_metadata.json`: metadata của scene, module, gNB, trajectory RX
-- `meshes/*.obj`: mesh thành phần của scene
+- `scene.xml`
+- `scene_metadata.json`
+- `meshes/*.obj`
+- `railway_scene_unified.blend` neu chay bang Blender
 
-### Output trace chính
+### 6.2. Output trace
 
 - `mpc_tx1_viaductA.csv`
 - `mpc_tx2_ground.csv`
@@ -168,90 +278,139 @@ Thư mục chính:
 - `mpc_tx4_viaductF.csv`
 - `mpc_tx5_portal.csv`
 
-Tất cả các file trên:
-
-- có cùng chuỗi timestamp
-- cùng schema:
+Schema CSV:
 
 ```text
 timestamp_ns,path_id,delay_s,amplitude_real,amplitude_imag,phase_rad,aoa_theta_rad,aoa_phi_rad,aod_theta_rad,aod_phi_rad,doppler_hz,los_flag
 ```
 
-### Output tổng hợp
+### 6.3. Output tong hop
 
-- `doppler_vs_time.png`: tổng hợp tất cả TX
-- `path_count_vs_time.png`: tổng hợp tất cả TX
-- `trace_manifest.json`: manifest các file trace và plot per-TX
+- `doppler_vs_time.png`
+- `path_count_vs_time.png`
+- `trace_manifest.json`
 
-### Output per-TX
-
-Mỗi TX có thêm:
+### 6.4. Output theo tung tram
 
 - `{station}_doppler_vs_time.png`
 - `{station}_path_count_vs_time.png`
 - `{station}_rays_3d_start_*.png`
 - `{station}_rays_3d_mid_*.png`
 - `{station}_rays_3d_end_*.png`
-- `{station}_rays_scene_start_*.png`
-- `{station}_rays_scene_mid_*.png`
-- `{station}_rays_scene_end_*.png`
 - `{station}_coverage_start_*.png`
 - `{station}_coverage_mid_*.png`
 - `{station}_coverage_end_*.png`
 
-## Ý nghĩa file cấu hình
+## 7. Cach xac nhan ban dang chay vat ly that
 
-`phase1_pipeline/config/config.yaml` hiện chứa:
+Khong du vao viec co CSV hay khong. Phai kiem tra:
 
-- `scenario`: loại kịch bản
-- `scene`: kích thước toàn tuyến
-- `railway`: tham số ray
-- `noise_barriers`: vị trí và kích thước rào
-- `catenary`: tham số cột và dây điện
-- `base_stations`: danh sách 5 gNB
-- `train`: tham số đoàn tàu và vị trí anten RX
-- `trajectory`: quỹ đạo RX chi tiết theo từng module
-- `simulation`: tần số, tốc độ tàu, timestep
-- `ray_tracing`: tham số solver
-- `paths`: nơi lưu output
+1. `load_scene()` qua duoc
+2. Log ghi `backend=sionna`
+3. `trace_manifest.json` co truong `backend` bang `sionna`
 
-## Tài liệu đi kèm nên đọc
+Kiem tra nhanh manifest:
 
-- `SioNetRail_Unified_Scene_3000m.md`: mô tả chi tiết kịch bản tích hợp đã setup trong source
-- `SioNetRail_Unified_Output_Assessment.md`: giải thích và đánh giá chi tiết các output hiện tại
-
-## Lưu ý quan trọng khi đọc kết quả
-
-- Kết quả hiện tại có thể đến từ `fallback` backend nếu Sionna RT không khả dụng hoặc khi dùng `--force-fallback`
-- Khi đọc kết quả trong `trace_manifest.json`, cần kiểm tra trường `backend`
-- Nếu backend là `fallback`, output phù hợp để kiểm tra logic pipeline và xu hướng kênh truyền, nhưng chưa phải mức fidelity cuối cùng như khi chạy Sionna RT đầy đủ
-
-## Troubleshooting
-
-### Không import được Mitsuba hoặc Sionna RT
-
-- kiểm tra môi trường Python đang dùng
-- cài lại:
-
-```bash
-pip install mitsuba sionna-rt
+```powershell
+Get-Content phase1_pipeline\output_unified\trace_manifest.json
 ```
 
-### Lỗi LLVM trên Windows
+Neu dung, trong moi entry phai co:
 
-- cài LLVM qua conda hoặc installer
-- set `DRJIT_LIBLLVM_PATH`
-
-### Muốn chạy lại sạch output
-
-- xóa thủ công thư mục `phase1_pipeline/output_unified/`
-- chạy lại pipeline
-
-### Muốn sinh `.blend` cho scene tích hợp
-
-- cài Blender và đảm bảo `blender.exe` có trong `PATH`
-- sau đó chạy:
-
-```bash
-python -m phase1_pipeline.run_pipeline --config phase1_pipeline/config/config.yaml
+```text
+"backend": "sionna"
 ```
+
+## 8. Full run mat bao lau
+
+Khong co con so co dinh, phu thuoc vao:
+
+- GPU/CUDA hay chi LLVM
+- `samples_per_src`
+- `max_num_paths`
+- so luong mau tren trajectory
+
+Voi config hien tai:
+
+- `samples_per_src: 3000`
+- `max_num_paths: 4000`
+- trajectory rat dai
+
+nen full run co the rat lau.
+
+Neu can test nhanh truoc, hay dung bai test ngan o Buoc 4.
+
+## 9. Blender branch
+
+Neu muon xuat `.blend`:
+
+```powershell
+blender --background --python phase1_pipeline/blender/generate_scene.py -- --config phase1_pipeline/config/config.yaml
+```
+
+Sau do co the export XML tu `.blend`:
+
+```powershell
+blender phase1_pipeline/output_unified/railway_scene_unified.blend --background --python phase1_pipeline/export/export_mitsuba.py -- --config phase1_pipeline/config/config.yaml
+```
+
+Tuy nhien, voi kich ban `unified_3000m`, procedural exporter da du de chay Sionna RT that, khong bat buoc phai qua Blender.
+
+## 10. Troubleshooting
+
+### 10.1. `backend=fallback`
+
+Nguyen nhan thuong gap:
+
+- import `sionna` hoac `mitsuba` loi
+- `scene.xml` khong load duoc vao `sionna.rt`
+- variant/plugin cua Mitsuba bi doi sai
+
+Cach xu ly:
+
+1. Chay lai Buoc 2
+2. Chay lai Buoc 3
+3. Chay bai test ngan Buoc 4
+
+### 10.2. Loi LLVM tren Windows
+
+Neu can, set bien moi truong:
+
+```powershell
+$env:DRJIT_LIBLLVM_PATH="C:\Program Files\LLVM\bin\LLVM-C.dll"
+```
+
+Hoac dung ban LLVM trong `conda`.
+
+### 10.3. Muon xoa output cu
+
+Xoa thu cong:
+
+`phase1_pipeline/output_unified/`
+
+roi chay lai tu Buoc 2.
+
+### 10.4. Plain Mitsuba khong render duoc `itu-radio-material`
+
+Day la hanh vi binh thuong trong setup hien tai.
+
+- khong anh huong toi solver `sionna`
+- chi anh huong toi viec render scene bang plain Mitsuba
+- project van xuat `rays_3d` va `coverage` binh thuong
+
+## 11. Lenh nen dung hang ngay
+
+Neu chi can workflow an toan:
+
+```powershell
+cd C:\Users\asela\OneDrive\Members\K67.BuiVanQuyen\SioNetRail
+python -m phase1_pipeline.export.export_mitsuba_fallback --config phase1_pipeline/config/config.yaml
+python -m phase1_pipeline.raytracing.run_sionna_rt --config phase1_pipeline/config/config.yaml
+Get-Content phase1_pipeline\output_unified\trace_manifest.json
+```
+
+Muc tieu cuoi cung:
+
+- scene export thanh cong
+- log hien `backend=sionna`
+- manifest xac nhan `"backend": "sionna"`
