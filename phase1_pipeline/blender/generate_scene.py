@@ -53,6 +53,24 @@ def configure_scene_units() -> None:
     scene.render.engine = "CYCLES"
 
 
+def configure_large_scene_view(center_x: float, center_y: float, center_z: float, distance: float, clip_end: float) -> None:
+    for screen in bpy.data.screens:
+        for area in screen.areas:
+            if area.type != "VIEW_3D":
+                continue
+            for space in area.spaces:
+                if space.type != "VIEW_3D":
+                    continue
+                space.clip_start = 0.1
+                space.clip_end = clip_end
+                region_3d = getattr(space, "region_3d", None)
+                if region_3d is None:
+                    continue
+                region_3d.view_location = (center_x, center_y, center_z)
+                region_3d.view_distance = distance
+                region_3d.view_rotation = (0.82, 0.42, 0.18, 0.34)
+
+
 def ensure_collection(name: str) -> bpy.types.Collection:
     collection = bpy.data.collections.get(name)
     if collection is None:
@@ -513,8 +531,10 @@ def main() -> None:
 
     if is_unified_scenario(config):
         metadata = build_unified_scene(config, collections, materials)
+        configure_large_scene_view(center_x=1500.0, center_y=0.0, center_z=10.0, distance=2200.0, clip_end=12000.0)
     else:
         metadata = build_legacy_scene(config, collections, materials)
+        configure_large_scene_view(center_x=0.0, center_y=0.0, center_z=5.0, distance=900.0, clip_end=4000.0)
         if is_tunnel_scenario(config):
             metadata["tunnel_height_m"] = config["tunnel"]["inner_height_m"]
         else:
