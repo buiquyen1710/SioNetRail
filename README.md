@@ -256,6 +256,12 @@ Chi dung khi ban muon so sanh backend:
 ```powershell
 python -m phase1_pipeline.raytracing.run_sionna_rt --config phase1_pipeline/config/config.yaml --force-fallback
 ```
+### Tong hop cac lenh chay full cac kich ban so sanh
+cd C:\Users\asela\OneDrive\Members\K67.BuiVanQuyen\SioNetRail
+python -m phase1_pipeline.export.export_mitsuba_fallback --config phase1_pipeline/config/config.yaml
+python -m phase1_pipeline.raytracing.run_sionna_rt --config phase1_pipeline/config/config.yaml
+python -m phase1_pipeline.postprocess.apply_train_blockage --config phase1_pipeline/config/config.yaml
+
 
 ## 6. Output sau khi chay
 

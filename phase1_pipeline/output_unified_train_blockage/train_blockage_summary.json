@@ -1,0 +1,72 @@
+[
+  {
+    "station": "TX1",
+    "output_name": "mpc_tx1_viaductA",
+    "input_csv": "C:\\Users\\asela\\OneDrive\\Members\\K67.BuiVanQuyen\\SioNetRail\\phase1_pipeline\\output_unified\\mpc_tx1_viaductA.csv",
+    "output_csv": "C:\\Users\\asela\\OneDrive\\Members\\K67.BuiVanQuyen\\SioNetRail\\phase1_pipeline\\output_unified_train_blockage\\mpc_tx1_viaductA.csv",
+    "rows": 6236,
+    "timestamps": 3391,
+    "blocked_rows": 1899,
+    "blocked_row_ratio": 0.304522,
+    "blocked_los_rows": 0,
+    "blocked_timestamps": 1480,
+    "blocked_timestamp_ratio": 0.436449,
+    "missing_trajectory_timestamps": 0
+  },
+  {
+    "station": "TX2",
+    "output_name": "mpc_tx2_ground",
+    "input_csv": "C:\\Users\\asela\\OneDrive\\Members\\K67.BuiVanQuyen\\SioNetRail\\phase1_pipeline\\output_unified\\mpc_tx2_ground.csv",
+    "output_csv": "C:\\Users\\asela\\OneDrive\\Members\\K67.BuiVanQuyen\\SioNetRail\\phase1_pipeline\\output_unified_train_blockage\\mpc_tx2_ground.csv",
+    "rows": 8460,
+    "timestamps": 3391,
+    "blocked_rows": 2826,
+    "blocked_row_ratio": 0.334043,
+    "blocked_los_rows": 0,
+    "blocked_timestamps": 2449,
+    "blocked_timestamp_ratio": 0.722206,
+    "missing_trajectory_timestamps": 0
+  },
+  {
+    "station": "TX3",
+    "output_name": "mpc_tx3_tunnel",
+    "input_csv": "C:\\Users\\asela\\OneDrive\\Members\\K67.BuiVanQuyen\\SioNetRail\\phase1_pipeline\\output_unified\\mpc_tx3_tunnel.csv",
+    "output_csv": "C:\\Users\\asela\\OneDrive\\Members\\K67.BuiVanQuyen\\SioNetRail\\phase1_pipeline\\output_unified_train_blockage\\mpc_tx3_tunnel.csv",
+    "rows": 36504,
+    "timestamps": 3391,
+    "blocked_rows": 10630,
+    "blocked_row_ratio": 0.291201,
+    "blocked_los_rows": 0,
+    "blocked_timestamps": 2699,
+    "blocked_timestamp_ratio": 0.79593,
+    "missing_trajectory_timestamps": 0
+  },
+  {
+    "station": "TX4",
+    "output_name": "mpc_tx4_viaductF",
+    "input_csv": "C:\\Users\\asela\\OneDrive\\Members\\K67.BuiVanQuyen\\SioNetRail\\phase1_pipeline\\output_unified\\mpc_tx4_viaductF.csv",
+    "output_csv": "C:\\Users\\asela\\OneDrive\\Members\\K67.BuiVanQuyen\\SioNetRail\\phase1_pipeline\\output_unified_train_blockage\\mpc_tx4_viaductF.csv",
+    "rows": 8103,
+    "timestamps": 3391,
+    "blocked_rows": 1134,
+    "blocked_row_ratio": 0.139948,
+    "blocked_los_rows": 0,
+    "blocked_timestamps": 722,
+    "blocked_timestamp_ratio": 0.212917,
+    "missing_trajectory_timestamps": 0
+  },
+  {
+    "station": "TX5",
+    "output_name": "mpc_tx5_portal",
+    "input_csv": "C:\\Users\\asela\\OneDrive\\Members\\K67.BuiVanQuyen\\SioNetRail\\phase1_pipeline\\output_unified\\mpc_tx5_portal.csv",
+    "output_csv": "C:\\Users\\asela\\OneDrive\\Members\\K67.BuiVanQuyen\\SioNetRail\\phase1_pipeline\\output_unified_train_blockage\\mpc_tx5_portal.csv",
+    "rows": 8990,
+    "timestamps": 3391,
+    "blocked_rows": 2701,
+    "blocked_row_ratio": 0.300445,
+    "blocked_los_rows": 0,
+    "blocked_timestamps": 2275,
+    "blocked_timestamp_ratio": 0.670894,
+    "missing_trajectory_timestamps": 0
+  }
+]

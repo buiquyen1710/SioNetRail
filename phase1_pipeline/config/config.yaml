@@ -181,6 +181,21 @@ antenna:
     polarization: VH
     polarization_model: tr38901_2
 
+train_blockage:
+  enabled: true
+  input_trace_csv_pattern: output_unified/{station}.csv
+  output_trace_csv_pattern: output_unified_train_blockage/{station}.csv
+  output_manifest: output_unified_train_blockage/trace_manifest_train_blockage.json
+  summary_json: output_unified_train_blockage/train_blockage_summary.json
+  rx_offset_from_train_front_m: 4.0
+  roof_clearance_m: 0.35
+  lateral_margin_m: 0.10
+  vertical_margin_m: 0.05
+  lookback_distance_m: 80.0
+  los_blockage_loss_db: 22.0
+  nlos_blockage_loss_db: 12.0
+  set_blocked_los_to_nlos: true
+
 paths:
   blend_file: output_unified/railway_scene_unified.blend
   mitsuba_xml: output_unified/scene.xml
