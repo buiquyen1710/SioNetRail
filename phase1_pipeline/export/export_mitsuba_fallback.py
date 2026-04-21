@@ -97,12 +97,23 @@ def write_obj(path: Path, vertices: Iterable[Tuple[float, float, float]], faces:
             handle.write(f"f {a} {b} {c}\n")
 
 
-def material_bsdf(bsdf_id: str) -> ET.Element:
-    material_type = bsdf_id.replace("mat-itu_", "")
+def material_bsdf(bsdf_id: str, material_type: str, thickness_m: float, scattering_coefficient: float = 0.0, xpd_coefficient: float = 0.0) -> ET.Element:
     bsdf = ET.Element("bsdf", {"type": "itu-radio-material", "id": bsdf_id})
     ET.SubElement(bsdf, "string", {"name": "type", "value": material_type})
-    ET.SubElement(bsdf, "float", {"name": "thickness", "value": "1.0"})
+    ET.SubElement(bsdf, "float", {"name": "thickness", "value": f"{thickness_m:.3f}"})
+    ET.SubElement(bsdf, "float", {"name": "scattering_coefficient", "value": f"{scattering_coefficient:.3f}"})
+    ET.SubElement(bsdf, "float", {"name": "xpd_coefficient", "value": f"{xpd_coefficient:.3f}"})
     return bsdf
+
+
+def material_library() -> Dict[str, Dict[str, float | str]]:
+    return {
+        "mat-itu_concrete": {"type": "concrete", "thickness_m": 0.30, "scattering_coefficient": 0.12, "xpd_coefficient": 0.15},
+        "mat-itu_concrete_rough": {"type": "concrete", "thickness_m": 0.35, "scattering_coefficient": 0.25, "xpd_coefficient": 0.20},
+        "mat-itu_metal": {"type": "metal", "thickness_m": 0.01, "scattering_coefficient": 0.03, "xpd_coefficient": 0.05},
+        "mat-itu_glass": {"type": "glass", "thickness_m": 0.02, "scattering_coefficient": 0.02, "xpd_coefficient": 0.05},
+        "mat-itu_marble": {"type": "marble", "thickness_m": 0.40, "scattering_coefficient": 0.18, "xpd_coefficient": 0.15},
+    }
 
 
 def add_shape(root: ET.Element, shape_id: str, filename: Path, bsdf_id: str, xml_dir: Path) -> None:
@@ -136,6 +147,33 @@ def append_cylinder(objects: List[Tuple[str, Path, str]], mesh_dir: Path, name: 
     objects.append((name, path, bsdf_id))
 
 
+def append_tunnel_clutter(config: Dict, mesh_dir: Path, objects: List[Tuple[str, Path, str]]) -> None:
+    density = str(config.get("ray_tracing", {}).get("tunnel_clutter_density", "medium")).lower()
+    if density == "low":
+        step = 75.0
+    elif density == "high":
+        step = 30.0
+    else:
+        step = 50.0
+
+    append_box(objects, mesh_dir, "TUNNEL_D_CableTrayLeft", (1450.0, -4.55, 6.85), (300.0, 0.30, 0.18), "mat-itu_metal")
+    append_box(objects, mesh_dir, "TUNNEL_D_CableTrayRight", (1450.0, 4.55, 6.85), (300.0, 0.30, 0.18), "mat-itu_metal")
+
+    index = 1
+    x = 1325.0
+    while x <= 1575.0:
+        append_box(objects, mesh_dir, f"TUNNEL_D_ServiceBoxLeft_{index:02d}", (x, -4.55, 1.35), (1.20, 0.45, 1.80), "mat-itu_metal")
+        append_box(objects, mesh_dir, f"TUNNEL_D_ServiceBoxRight_{index:02d}", (x, 4.55, 1.35), (1.20, 0.45, 1.80), "mat-itu_metal")
+        x += step
+        index += 1
+
+    for portal_x in (1300.0, 1600.0):
+        portal_tag = f"{int(portal_x)}"
+        append_box(objects, mesh_dir, f"PORTAL_{portal_tag}_LeftJamb", (portal_x, -4.95, 3.75), (0.80, 0.40, 7.50), "mat-itu_concrete_rough")
+        append_box(objects, mesh_dir, f"PORTAL_{portal_tag}_RightJamb", (portal_x, 4.95, 3.75), (0.80, 0.40, 7.50), "mat-itu_concrete_rough")
+        append_box(objects, mesh_dir, f"PORTAL_{portal_tag}_Lintel", (portal_x, 0.0, 7.10), (0.80, 10.30, 0.70), "mat-itu_concrete_rough")
+
+
 def append_base_station_objects(config: Dict, mesh_dir: Path, objects: List[Tuple[str, Path, str]]) -> List[Tuple[float, float, float]]:
     stations = []
     for idx, gnb_cfg in enumerate(all_base_stations(config)):
@@ -155,7 +193,7 @@ def build_unified_scene(config: Dict, output_paths: Dict[str, Path]) -> None:
     train_cfg = config["train"]
     include_train_in_rt_scene = bool(config.get("ray_tracing", {}).get("include_train_in_rt_scene", False))
 
-    append_box(objects, mesh_dir, "GROUND_OUTDOOR", (1500.0, 0.0, -0.3), (3000.0, 200.0, 0.6), "mat-itu_concrete")
+    append_box(objects, mesh_dir, "GROUND_OUTDOOR", (1500.0, 0.0, -0.3), (3000.0, 200.0, 0.6), "mat-itu_concrete_rough")
 
     # Module A
     append_box(objects, mesh_dir, "VIADUCT_A_Deck", (350.0, 0.0, 11.0), (700.0, 12.0, 2.0), "mat-itu_concrete")
@@ -197,12 +235,14 @@ def build_unified_scene(config: Dict, output_paths: Dict[str, Path]) -> None:
             append_box(objects, mesh_dir, f"STEEPWALL_C_{side}_{step_idx}", (x, y, height / 2.0), (50.0, 0.5, height), "mat-itu_marble")
 
     # Module D
-    append_box(objects, mesh_dir, "TUNNEL_D_Floor", (1450.0, 0.0, -0.25), (300.0, 10.0, 0.5), "mat-itu_concrete")
-    append_box(objects, mesh_dir, "TUNNEL_D_Ceiling", (1450.0, 0.0, 7.75), (300.0, 10.0, 0.5), "mat-itu_concrete")
-    append_box(objects, mesh_dir, "TUNNEL_D_WallLeft", (1450.0, -5.25, 3.75), (300.0, 0.5, 7.5), "mat-itu_concrete")
-    append_box(objects, mesh_dir, "TUNNEL_D_WallRight", (1450.0, 5.25, 3.75), (300.0, 0.5, 7.5), "mat-itu_concrete")
+    append_box(objects, mesh_dir, "TUNNEL_D_Floor", (1450.0, 0.0, -0.25), (300.0, 10.0, 0.5), "mat-itu_concrete_rough")
+    append_box(objects, mesh_dir, "TUNNEL_D_Ceiling", (1450.0, 0.0, 7.75), (300.0, 10.0, 0.5), "mat-itu_concrete_rough")
+    append_box(objects, mesh_dir, "TUNNEL_D_WallLeft", (1450.0, -5.25, 3.75), (300.0, 0.5, 7.5), "mat-itu_concrete_rough")
+    append_box(objects, mesh_dir, "TUNNEL_D_WallRight", (1450.0, 5.25, 3.75), (300.0, 0.5, 7.5), "mat-itu_concrete_rough")
     append_box(objects, mesh_dir, "RAIL_D_Left", (1450.0, -0.7175, 0.086), (300.0, 0.07, 0.172), "mat-itu_metal")
     append_box(objects, mesh_dir, "RAIL_D_Right", (1450.0, 0.7175, 0.086), (300.0, 0.07, 0.172), "mat-itu_metal")
+
+    append_tunnel_clutter(config, mesh_dir, objects)
 
     # Module E
     append_box(objects, mesh_dir, "TRACKBED_E", (1750.0, 0.0, -0.15), (300.0, 3.2, 0.3), "mat-itu_concrete")
@@ -257,8 +297,16 @@ def build_unified_scene(config: Dict, output_paths: Dict[str, Path]) -> None:
     ET.SubElement(film, "integer", {"name": "width", "value": "1024"})
     ET.SubElement(film, "integer", {"name": "height", "value": "576"})
 
-    for bsdf_id in ("mat-itu_concrete", "mat-itu_metal", "mat-itu_glass", "mat-itu_marble"):
-        root.append(material_bsdf(bsdf_id))
+    for bsdf_id, params in material_library().items():
+        root.append(
+            material_bsdf(
+                bsdf_id,
+                str(params["type"]),
+                float(params["thickness_m"]),
+                float(params["scattering_coefficient"]),
+                float(params["xpd_coefficient"]),
+            )
+        )
     for name, path, bsdf_id in objects:
         add_shape(root, name, path, bsdf_id, xml_dir)
 
@@ -352,8 +400,17 @@ def build_legacy_scene(config: Dict, output_paths: Dict[str, Path]) -> None:
     film = ET.SubElement(sensor, "film", {"type": "hdrfilm"})
     ET.SubElement(film, "integer", {"name": "width", "value": "800"})
     ET.SubElement(film, "integer", {"name": "height", "value": "450"})
-    for bsdf_id in ("mat-itu_concrete", "mat-itu_metal", "mat-itu_glass"):
-        root.append(material_bsdf(bsdf_id))
+    for bsdf_id in ("mat-itu_concrete", "mat-itu_concrete_rough", "mat-itu_metal", "mat-itu_glass", "mat-itu_marble"):
+        params = material_library()[bsdf_id]
+        root.append(
+            material_bsdf(
+                bsdf_id,
+                str(params["type"]),
+                float(params["thickness_m"]),
+                float(params["scattering_coefficient"]),
+                float(params["xpd_coefficient"]),
+            )
+        )
     for name, path, bsdf_id in objects:
         add_shape(root, name, path, bsdf_id, xml_dir)
     tree = ET.ElementTree(root)

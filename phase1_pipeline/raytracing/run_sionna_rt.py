@@ -254,6 +254,17 @@ def extract_sionna_paths(paths, config: Dict) -> List[CandidatePath]:
                 los_flag=los_flag,
             )
         )
+    if not extracted:
+        return extracted
+    dynamic_range_db = float(config.get("ray_tracing", {}).get("min_relative_path_gain_db", 40.0))
+    strongest = max(abs(path.coefficient) for path in extracted)
+    if strongest > 0.0:
+        min_magnitude = strongest * (10.0 ** (-dynamic_range_db / 20.0))
+        extracted = [path for path in extracted if abs(path.coefficient) >= min_magnitude]
+    extracted.sort(key=lambda path: abs(path.coefficient), reverse=True)
+    max_paths_after_filter = int(config.get("ray_tracing", {}).get("max_paths_after_filter", 0) or 0)
+    if max_paths_after_filter > 0:
+        extracted = extracted[:max_paths_after_filter]
     return extracted
 
 
@@ -523,7 +534,7 @@ def export_snapshot_visualizations(
     mitsuba_scene=None,
     mi=None,
 ) -> None:
-    if not snapshot_data:
+    if not snapshot_data or bool(config.get("ray_tracing", {}).get("skip_snapshot_visualizations", False)):
         return
     prefix = snapshot_file_prefix(station, index)
     tx_pos = station_ray_origin(station)
@@ -550,6 +561,29 @@ def export_snapshot_visualizations(
         )
 
 
+def build_planar_array(config: Dict, imports: Dict, key: str):
+    defaults = {
+        "num_rows": 1,
+        "num_cols": 1,
+        "vertical_spacing": 0.5,
+        "horizontal_spacing": 0.5,
+        "pattern": "iso",
+        "polarization": "V",
+        "polarization_model": "tr38901_2",
+    }
+    array_cfg = dict(defaults)
+    array_cfg.update(config.get("antenna", {}).get(key, {}))
+    return imports["PlanarArray"](
+        num_rows=int(array_cfg["num_rows"]),
+        num_cols=int(array_cfg["num_cols"]),
+        vertical_spacing=float(array_cfg["vertical_spacing"]),
+        horizontal_spacing=float(array_cfg["horizontal_spacing"]),
+        pattern=str(array_cfg["pattern"]),
+        polarization=str(array_cfg["polarization"]),
+        polarization_model=str(array_cfg.get("polarization_model", "tr38901_2")),
+    )
+
+
 def run_sionna_backend(config: Dict, output_paths: Dict, station: Dict, index: int, samples: List[Tuple[float, Tuple[float, float, float]]]) -> List[Dict[str, float]]:
     imports = try_import_sionna()
     if imports is None:
@@ -557,8 +591,8 @@ def run_sionna_backend(config: Dict, output_paths: Dict, station: Dict, index: i
     mitsuba_scene_path = prepare_ascii_safe_scene(output_paths)
     scene = imports["load_scene"](str(mitsuba_scene_path), merge_shapes=False)
     scene.frequency = float(config["simulation"]["frequency_hz"])
-    scene.tx_array = imports["PlanarArray"](num_rows=1, num_cols=1, vertical_spacing=0.5, horizontal_spacing=0.5, pattern="iso", polarization="V")
-    scene.rx_array = imports["PlanarArray"](num_rows=1, num_cols=1, vertical_spacing=0.5, horizontal_spacing=0.5, pattern="iso", polarization="V")
+    scene.tx_array = build_planar_array(config, imports, "tx_array")
+    scene.rx_array = build_planar_array(config, imports, "rx_array")
     mi = imports["mi"]
     tx = imports["Transmitter"](name="tx", position=mi.Point3f(*station_ray_origin(station)), orientation=mi.Point3f(0.0, 0.0, 0.0))
     rx = imports["Receiver"](name="rx", position=mi.Point3f(*samples[0][1]), orientation=mi.Point3f(0.0, 0.0, 0.0))
@@ -578,12 +612,15 @@ def run_sionna_backend(config: Dict, output_paths: Dict, station: Dict, index: i
                 max_depth=int(config["ray_tracing"]["max_depth"]),
                 max_num_paths_per_src=int(config["ray_tracing"]["max_num_paths"]),
                 samples_per_src=int(config["ray_tracing"]["samples_per_src"]),
-                synthetic_array=True,
+                synthetic_array=bool(config["ray_tracing"].get("synthetic_array", True)),
                 los=True,
                 specular_reflection=True,
-                diffuse_reflection=False,
+                diffuse_reflection=bool(config["ray_tracing"].get("enable_diffuse_reflection", False)),
                 refraction=bool(config["ray_tracing"].get("enable_refraction", False)),
-                diffraction=False,
+                diffraction=bool(config["ray_tracing"].get("enable_diffraction", False)),
+                edge_diffraction=bool(config["ray_tracing"].get("enable_edge_diffraction", False)),
+                diffraction_lit_region=bool(config["ray_tracing"].get("enable_diffraction_lit_region", True)),
+                seed=42,
             )
             extracted = extract_sionna_paths(paths, config)
             if not extracted:
@@ -635,7 +672,8 @@ def run_station(config: Dict, base_output_paths: Dict, station: Dict, index: int
         backend = "fallback"
         print(f"Sionna RT backend unavailable or failed for {station_label(station, index)}: {safe_exception_text(exc)}")
         summary = run_fallback_backend(config, output_paths, station, index, samples)
-    export_validation_plots(summary, output_paths["doppler_plot"], output_paths["path_count_plot"])
+    if not bool(config.get("ray_tracing", {}).get("skip_station_validation_plots", False)):
+        export_validation_plots(summary, output_paths["doppler_plot"], output_paths["path_count_plot"])
     print(f"[{station_label(station, index)}] backend={backend} trace={safe_path_text(output_paths['trace_csv'])}")
     return backend, summary, output_paths
 

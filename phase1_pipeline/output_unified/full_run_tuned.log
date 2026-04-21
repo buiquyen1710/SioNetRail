@@ -1,0 +1,18 @@
+2026-04-18 10:08:07 WARN  [HDRFilm] Monochrome mode enabled, setting film output pixel format to 'luminance' (was rgb).
+2026-04-18 12:41:50 WARN  [HDRFilm] Monochrome mode enabled, setting film output pixel format to 'luminance' (was rgb).
+2026-04-18 15:26:59 WARN  [HDRFilm] Monochrome mode enabled, setting film output pixel format to 'luminance' (was rgb).
+2026-04-18 18:17:31 WARN  [HDRFilm] Monochrome mode enabled, setting film output pixel format to 'luminance' (was rgb).
+2026-04-18 21:14:42 WARN  [HDRFilm] Monochrome mode enabled, setting film output pixel format to 'luminance' (was rgb).
+[TX1] backend=sionna trace=C:\Users\asela\OneDrive\Members\K67.BuiVanQuyen\SioNetRail\phase1_pipeline\output_unified\mpc_tx1_viaductA.csv
+[TX2] backend=sionna trace=C:\Users\asela\OneDrive\Members\K67.BuiVanQuyen\SioNetRail\phase1_pipeline\output_unified\mpc_tx2_ground.csv
+[TX3] backend=sionna trace=C:\Users\asela\OneDrive\Members\K67.BuiVanQuyen\SioNetRail\phase1_pipeline\output_unified\mpc_tx3_tunnel.csv
+[TX4] backend=sionna trace=C:\Users\asela\OneDrive\Members\K67.BuiVanQuyen\SioNetRail\phase1_pipeline\output_unified\mpc_tx4_viaductF.csv
+[TX5] backend=sionna trace=C:\Users\asela\OneDrive\Members\K67.BuiVanQuyen\SioNetRail\phase1_pipeline\output_unified\mpc_tx5_portal.csv
+Unified trace manifest: C:\Users\asela\OneDrive\Members\K67.BuiVanQuyen\SioNetRail\phase1_pipeline\output_unified\trace_manifest.json
+
+============================================================
+Ray-tracing completed
+============================================================
+Scene XML: C:\Users\asela\OneDrive\Members\K67.BuiVanQuyen\SioNetRail\phase1_pipeline\output_unified\scene.xml
+Scene metadata: C:\Users\asela\OneDrive\Members\K67.BuiVanQuyen\SioNetRail\phase1_pipeline\output_unified\scene_metadata.json
+============================================================

@@ -15,24 +15,38 @@
   </sensor>
   <bsdf type="itu-radio-material" id="mat-itu_concrete">
     <string name="type" value="concrete" />
-    <float name="thickness" value="1.0" />
+    <float name="thickness" value="0.300" />
+    <float name="scattering_coefficient" value="0.120" />
+    <float name="xpd_coefficient" value="0.150" />
+  </bsdf>
+  <bsdf type="itu-radio-material" id="mat-itu_concrete_rough">
+    <string name="type" value="concrete" />
+    <float name="thickness" value="0.350" />
+    <float name="scattering_coefficient" value="0.250" />
+    <float name="xpd_coefficient" value="0.200" />
   </bsdf>
   <bsdf type="itu-radio-material" id="mat-itu_metal">
     <string name="type" value="metal" />
-    <float name="thickness" value="1.0" />
+    <float name="thickness" value="0.010" />
+    <float name="scattering_coefficient" value="0.030" />
+    <float name="xpd_coefficient" value="0.050" />
   </bsdf>
   <bsdf type="itu-radio-material" id="mat-itu_glass">
     <string name="type" value="glass" />
-    <float name="thickness" value="1.0" />
+    <float name="thickness" value="0.020" />
+    <float name="scattering_coefficient" value="0.020" />
+    <float name="xpd_coefficient" value="0.050" />
   </bsdf>
   <bsdf type="itu-radio-material" id="mat-itu_marble">
     <string name="type" value="marble" />
-    <float name="thickness" value="1.0" />
+    <float name="thickness" value="0.400" />
+    <float name="scattering_coefficient" value="0.180" />
+    <float name="xpd_coefficient" value="0.150" />
   </bsdf>
   <shape type="obj" id="mesh-GROUND_OUTDOOR">
     <string name="filename" value="meshes/GROUND_OUTDOOR.obj" />
     <boolean name="face_normals" value="true" />
-    <ref id="mat-itu_concrete" name="bsdf" />
+    <ref id="mat-itu_concrete_rough" name="bsdf" />
   </shape>
   <shape type="obj" id="mesh-VIADUCT_A_Deck">
     <string name="filename" value="meshes/VIADUCT_A_Deck.obj" />
@@ -342,22 +356,22 @@
   <shape type="obj" id="mesh-TUNNEL_D_Floor">
     <string name="filename" value="meshes/TUNNEL_D_Floor.obj" />
     <boolean name="face_normals" value="true" />
-    <ref id="mat-itu_concrete" name="bsdf" />
+    <ref id="mat-itu_concrete_rough" name="bsdf" />
   </shape>
   <shape type="obj" id="mesh-TUNNEL_D_Ceiling">
     <string name="filename" value="meshes/TUNNEL_D_Ceiling.obj" />
     <boolean name="face_normals" value="true" />
-    <ref id="mat-itu_concrete" name="bsdf" />
+    <ref id="mat-itu_concrete_rough" name="bsdf" />
   </shape>
   <shape type="obj" id="mesh-TUNNEL_D_WallLeft">
     <string name="filename" value="meshes/TUNNEL_D_WallLeft.obj" />
     <boolean name="face_normals" value="true" />
-    <ref id="mat-itu_concrete" name="bsdf" />
+    <ref id="mat-itu_concrete_rough" name="bsdf" />
   </shape>
   <shape type="obj" id="mesh-TUNNEL_D_WallRight">
     <string name="filename" value="meshes/TUNNEL_D_WallRight.obj" />
     <boolean name="face_normals" value="true" />
-    <ref id="mat-itu_concrete" name="bsdf" />
+    <ref id="mat-itu_concrete_rough" name="bsdf" />
   </shape>
   <shape type="obj" id="mesh-RAIL_D_Left">
     <string name="filename" value="meshes/RAIL_D_Left.obj" />
@@ -368,6 +382,86 @@
     <string name="filename" value="meshes/RAIL_D_Right.obj" />
     <boolean name="face_normals" value="true" />
     <ref id="mat-itu_metal" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-TUNNEL_D_CableTrayLeft">
+    <string name="filename" value="meshes/TUNNEL_D_CableTrayLeft.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_metal" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-TUNNEL_D_CableTrayRight">
+    <string name="filename" value="meshes/TUNNEL_D_CableTrayRight.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_metal" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-TUNNEL_D_ServiceBoxLeft_01">
+    <string name="filename" value="meshes/TUNNEL_D_ServiceBoxLeft_01.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_metal" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-TUNNEL_D_ServiceBoxRight_01">
+    <string name="filename" value="meshes/TUNNEL_D_ServiceBoxRight_01.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_metal" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-TUNNEL_D_ServiceBoxLeft_02">
+    <string name="filename" value="meshes/TUNNEL_D_ServiceBoxLeft_02.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_metal" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-TUNNEL_D_ServiceBoxRight_02">
+    <string name="filename" value="meshes/TUNNEL_D_ServiceBoxRight_02.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_metal" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-TUNNEL_D_ServiceBoxLeft_03">
+    <string name="filename" value="meshes/TUNNEL_D_ServiceBoxLeft_03.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_metal" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-TUNNEL_D_ServiceBoxRight_03">
+    <string name="filename" value="meshes/TUNNEL_D_ServiceBoxRight_03.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_metal" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-TUNNEL_D_ServiceBoxLeft_04">
+    <string name="filename" value="meshes/TUNNEL_D_ServiceBoxLeft_04.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_metal" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-TUNNEL_D_ServiceBoxRight_04">
+    <string name="filename" value="meshes/TUNNEL_D_ServiceBoxRight_04.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_metal" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-PORTAL_1300_LeftJamb">
+    <string name="filename" value="meshes/PORTAL_1300_LeftJamb.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_concrete_rough" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-PORTAL_1300_RightJamb">
+    <string name="filename" value="meshes/PORTAL_1300_RightJamb.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_concrete_rough" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-PORTAL_1300_Lintel">
+    <string name="filename" value="meshes/PORTAL_1300_Lintel.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_concrete_rough" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-PORTAL_1600_LeftJamb">
+    <string name="filename" value="meshes/PORTAL_1600_LeftJamb.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_concrete_rough" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-PORTAL_1600_RightJamb">
+    <string name="filename" value="meshes/PORTAL_1600_RightJamb.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_concrete_rough" name="bsdf" />
+  </shape>
+  <shape type="obj" id="mesh-PORTAL_1600_Lintel">
+    <string name="filename" value="meshes/PORTAL_1600_Lintel.obj" />
+    <boolean name="face_normals" value="true" />
+    <ref id="mat-itu_concrete_rough" name="bsdf" />
   </shape>
   <shape type="obj" id="mesh-TRACKBED_E">
     <string name="filename" value="meshes/TRACKBED_E.obj" />
