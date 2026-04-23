@@ -1,0 +1,24 @@
+[
+  {
+    "station": "TX3",
+    "label": "TX3",
+    "view": "overview",
+    "file": "C:\\Users\\asela\\OneDrive\\Members\\K67.BuiVanQuyen\\SioNetRail\\phase1_pipeline\\sionna_rt_ray_renders\\mpc_tx3_tunnel_sionna_rt_paths_overview_x1550m.png",
+    "segments_3d_file": "C:\\Users\\asela\\OneDrive\\Members\\K67.BuiVanQuyen\\SioNetRail\\phase1_pipeline\\sionna_rt_ray_renders\\mpc_tx3_tunnel_sionna_rt_segments_3d_overview_x1550m.png",
+    "rx_position_m": [
+      1550.0,
+      0.0,
+      4.2
+    ],
+    "tx_position_m": [
+      1450.0,
+      -3.675,
+      5.5
+    ],
+    "time_s": 15.977044877959354,
+    "module": "tunnel",
+    "sionna_valid_paths_before_csv_filter": 73,
+    "resolved_paths_after_csv_filter": 32,
+    "path_count_note": "Sionna valid paths are raw valid paths in the Paths object before dynamic-range filtering and max_paths_after_filter. Resolved paths match the CSV/path-count plot after filtering."
+  }
+]

@@ -1,0 +1,644 @@
+                                                                                                                                        ©SHUTTERSTOCK.COM/LUCKYSTEP
+
+
+
+
+                             5G Channel Models for
+                              Railway Use Cases at
+                             mmWave Band and the
+                             Path Towards Terahertz
+                                           Ke Guan*,                                                                 Bile Peng,
+                                     Senior Member, IEEE.                                                         Member, IEEE.
+                                   E-mail: kguan@bjtu.edu.cn                                              E-mail: bile.peng@chalmers.se
+                                      Juan Moreno,                                                                Danping He,
+                                 Senior Member, IEEE.                                                            Member, IEEE.
+                           E-mail: juanmorenogl@diac.upm.es                                              E-mail: hedanping@bjtu.edu.cn
+                                              Bo Ai,                                                             Andrej Hrovat,
+                                      Senior Member, IEEE.                                                       Member, IEEE.
+                                     E-mail: boai@bjtu.edu.cn                                               E-mail: andrej.hrovat@ijs.si
+                                    Cesar Briso-Rodriguez                                                       Zhangdui Zhong,
+                                        Member, IEEE.                                                        Senior Member, IEEE.
+                                  E-mail: cesar.briso@upm.es                                              E-mail: zhdzhong@bjtu.edu.cn
+                                                                                                                 Thomas Kürner
+                                                                                                             Senior Member, IEEE.
+                                                                                                         E-mail: kuerner@ifn.ing.tu-bs.de
+                   Digital Object Identifier 10.1109/MITS.2019.2926371
+                   Date of current version: 21 February 2020                                   *Corresponding author
+
+
+Authorized licensed use limited to: Univ Politecnica de Madrid. Downloaded on January 20,2025 at 18:48:36 UTC from IEEE Xplore. Restrictions apply.
+                                                      IEEE INTELLIGENT TRANSPORTATION SYSTEMS MAGAZINE • 146 • FALL 2021                   1939-1390/21©2021IEEE
+                 Abstract—High-speed trains are one of the most relevant scenarios for the fifth-generation (5G) mobile
+                 communications and the “smart rail mobility” vision, where a high-data-rate wireless connectivity with
+                 up to several GHz bandwidths will be required. This is a strong motivation for the exploration of millimeter
+                 wave (mmWave) band. In this article, we identify the main challenges and make progress towards real-
+                 istic 5G mmWave channel models for railway use cases. In order to cope with the challenge of including
+                 the railway features in the channel models, we define reference scenarios to help the parameterization
+                 of channel models for railway use at mmWave band. Simulations and the subsequent measurements used
+                 to validate the model reflect the detailed influence of railway objects and the accuracy of the simulations.
+                 Finally, we point out the future directions towards the full version of the smart rail mobility which will be
+                 powered by terahertz (THz) communications.
+
+
+
+
+       I. Introduction                                                                higher) is needed to accommodate up to 100 Gbps data
+
+
+
+
+       T
+              he upcoming fifth-generation (5G) mobile commu-                         rates. Such high-data rate and huge bandwidth require-
+              nication system is expected to support high mobility                    ments are a strong motivation to explore the mmWave
+              up to 500 km/h, which is envisioned in particular for                   band [3], [4]. This exploration means that we need to have
+              high-speed trains (HST). Millimeter wave (mmWave)                       a great understanding of the behavior of the channel at
+       spectrum is considered as a key enabler for offering the                       mmWave band in railway scenarios.
+       “best experience” to users moving at high speeds. Apart                            Regarding mmWave bands for 5G, the standardization
+       from the requirement of 5G, rail traffic itself is expected to                 race has started to gain considerable traction within both
+       evolve into a new era of “smart rail mobility” where infra-                    the mobile industry and the European Union, through the
+       structure, trains, passengers and goods will be fully inter-                   5G Public-Private Partnership (5GPPP) initiative [5]. In
+       connected, which means also more complicated use cases.                        particular, many countries have started to test 5G-related
+       To realize this vision, which is one part of the “Shift2Rail                   technologies for railway use in mmWave band. For exam-
+       Initiative” [1], the European Union is calling proposals on                    ple, in Germany, some preliminary experiments were car-
+       topics like intelligent rail infrastructure, intelligent mo-                   ried out at 35 and 58 GHz bands; in Japan, 36–40.5 GHz,
+       bility management, smart rail services, etc. Indeed, these                     43.5–52.6 GHz, 55.78–76 GHz, 92–94 GHz, 94.1–100 GHz,
+       requirements impose requirements for a seamless high-                          and 102–109.5 GHz are the main concerned bands for T2I;
+       data-rate wireless connectivity in railways.                                   whereas the 60 GHz band is of great interest for French
+           Correspondingly, railway communications are evolv-                         railways, 67 GHz in the UK and 26 GHz in Korea, to provide
+       ing from only supporting critical signaling applications                       only some examples.
+       to providing several bandwidth-intensive applications,                             Therefore, it is critical to have fundamental knowledge
+       like onboard and wayside high definition (HD) video                            of the propagation channel characteristics in those bands.
+       surveillance, high-data rate connectivity for passengers,                      However, from the wireless channels point of view, there
+       passenger information, remote driving, among others.                           are numerous open challenges [6] on researching and de-
+       These applications need to be deployed in at least five                        veloping 5G mmWave systems for railway communications.
+       scenarios: train-to-infrastructure (T2I), inter-car (the                       To summarize, the sparseness of systematic research leads
+       train backbone), intra-car, inside station, and infrastruc-                    to the lack of standard channel models and reference sce-
+       ture-to-infrastructure [2]. For both the station and in-                       narios in railways for link-level or system-level evaluation.
+       frastructure-to-infrastructure scenarios, the bandwidth                        Therefore, it is of primary importance to have standard-
+       requirements go from several hundred MHz to several                            ized channel models in order to do properly all the appli-
+       GHz. For sure, the biggest challenge is posed by the T2I                       cation layer end-to-end tests for all the relevant use cases
+       scenario because this link needs to achieve very high data                     that will be enabled by these high-capacity communication
+       rates, low latencies, as well as close to 100% availability                    systems in railways.
+       while traveling at speeds around 500 km/h (as of 2018,                             The rest of this article is organized as follows. In
+       high-speed trains do not exceed 350 km/h in commercial                         Section II, we discuss the challenges and solutions for in-
+       travels, but the speed record is at 574 km/h since 2007). As                   volving railway features in channel models for mmWave
+       the main interface between the network on-train and the                        band. Moreover, two versions of comprehensive railway
+       fixed network, in the T2I scenario an aggregated stream                        scenario modules are reconstructed with detailed geom-
+       for the backhaul for both inter/intra-car scenarios is trans-                  etry and material information to highlight how the mod-
+       mitted. Therefore, a bandwidth of several GHz (or even                         eling could be. To do so, two stochastic channel models
+
+
+Authorized licensed use limited to: Univ Politecnica de Madrid. Downloaded on January 20,2025 at 18:48:36 UTC from IEEE Xplore. Restrictions apply.
+                                                 IEEE INTELLIGENT TRANSPORTATION SYSTEMS MAGAZINE • 147 • FALL 2021
+                                                                                                          r a i l way s c e n a r i o s shou ld b e
+                                                                                                          a b s t r a c t e d . T hus, rat her t ha n
+                                                                                                          modeling the site-specific rail-
+            It is of primary importance to have standardized channel                                      way environments one by one, we
+            models in order to do properly all the application layer end-to-                              reconstruct the three-dimensional
+                                                                                                          (3D) model of a set of comprehen-
+            end tests for all the relevant use cases that will be enabled by                              sive railway scenarios including
+            these high-capacity communication systems in railways.                                        six modules for 5G mmWave rail-
+                                                                                                          way channels. As shown in Fig. 1,
+                                                                                                          they are defined as “Module 1–
+                                                                                                          Tunnel entrance on steep wall
+       in two railway scenarios are established and validated at          connecting cutting with crossing bridges,” “Module 2–
+       90 GHz and 30 GHz, respectively. Future directions and a           Viaduct with open train station,” “Module 3 – Urban with
+       roadmap of realization of the full version of the smart rail       semi-closed train station,” “Module 4–Rural with cut
+       mobility are pointed out in Section III. Conclusions and fu-       and cover tunnel,” “Module 5–Rural connecting double-
+       ture work are drawn in Section IV.                                 track tunnel,” and “Module 6–Single-track viaduct.” All
+                                                                          the main objects are modeled according to the typical
+       II. Involving Railway Features in 5G mmWave                        geometries and materials in reality (see Table I for more
+       Channel Models                                                     details). Apart from common objects, such as trains,
+       In order to evaluate 5G mmWave communication paradigms             tracks, pylons, traffic signs, billboards, etc., each module
+       in railway environments, it is critical to define reference sce-   includes its special objects, like steep walls, cutting walls,
+       narios with typical railway propagation features [7]. However,
+       existing mmWave channel models are mainly for standard en-
+       vironments, e.g., Winner II [8], where railways are treated as       Table I. Parameters of complete version of railway scenarios.
+       a particular use case of a “moving hotspot”. Therefore, includ-
+                                                                            Relative Permittivity, Loss Tangent        Objects
+       ing the railway features in channel models is still an open chal-
+       lenge. Without the consideration of the influence of the main        Metal: 1.00, 107                           Billboard, barrier, traffic signs,
+       objects and geometries in propagation environments, the pro-                                                    crossing bridge, pylon, awning
+       totypes that can work in the lab may become unpredictable and        Concrete: 1.06, 0.65                       Pylon of billboard, track, tunnel,
+       unreliable in the real implementations. In this study, we present                                               buildings in rural, steep wall,
+       two versions of the reference scenario modules: the complete                                                    CCT, cutting wall, ground,
+                                                                                                                       station base
+       version with all the objects and the concise version with only the
+                                                                                                      7
+       most significant objects. Based on the ray-tracing simulations in    Aluminium alloy: 1.29, 10                  High speed train
+       these scenario modules, 5G channel characterization and mod-         LED: 3.74, 3.14                            Indicator, billboard
+       eling that reflect the railway features can be realized.             Tempered glass: 10.00, 0.43                Buildings in urban
+                                                                                        Vegetation: 29.12, 0.278                Vegetation
+       A. Complete Version of Reference Scenario
+       Modules of mmWave and THz Railway Channels                                       Smooth marble: 1.96, 0.30               Buildings in urban
+       In order to provide a baseline for evaluating 5G mmWave                          Ceramic tile: 1.85, 0.07                Buildings in urban, platform and
+       communications for railways, the commonness of t­ypical                                                                  pylons in station
+
+
+
+
+                                                                    3
+                      1                    2                                                  4                          5                       6
+
+
+
+
+              Module 1: Tunnel           Module 2:             Module 3:              Module 4: Rural              Module 5: Rural         Module 6:
+              Entrance on Steep           Viaduct              Urban With              With Cut and                  Connecting           Single-Track
+               Wall Connecting           With Open            Semi-Closed              Cover Tunnel                 Double-Track            Viaduct
+                 Cutting With           Train Station         Train Station                                            Tunnel
+               Crossing Bridges
+
+
+       FIG 1 Complete version of railway scenarios including six modules for 5G mmWave railway channels, originating from [7].
+
+
+
+Authorized licensed use limited to: Univ Politecnica de Madrid. Downloaded on January 20,2025 at 18:48:36 UTC from IEEE Xplore. Restrictions apply.
+                                                 IEEE INTELLIGENT TRANSPORTATION SYSTEMS MAGAZINE • 148 • FALL 2021
+       crossing br idges, train stations,
+       indicators, barriers, vegetation, cut
+       and cover tunnels, dual-track tun-
+       nel, and single-track viaduct. All            The 3D models of the six modules are publicly available and
+       these scenario modules can be in-             freely downloadable for link-level and system-level simulations
+       dependently used for concept veri-
+       fication in site-specific mmWave              (http://raytracer.cloud).
+       railway scenarios, or they can be
+       combined in various ways for doing
+       statistic evaluation of the system.
+       The 3D models of the six modules are publicly available           spread of arrival (ESA) and departure (ESD). They jointly
+       and freely downloadable for link-level and system-level           define the distribution of the departure- and arrival an-
+       simulations (http://raytracer.cloud).                             gles of each multipath component in 3D space seen by the
+                                                                         Tx and Rx, respectively. Therefore, these spreads can be
+       B. Channel Characterization in Complete Version of Modules        translated into specific angles for each multipath cluster,
+       In this study, we use a self-developed broadband and dy-          serving as key parameters in various channel models,
+       namic channel ray-tracing simulator for channel simu-             such as the whole measurement-based pseudo-geometric
+       lation–CloudRT [9]. It combines a railway ray-tracing             model (MBPGM) families [16]–WINNER-style (like 3GPP
+       simulator [10] and a broadband THz ray-tracing simulator          spatial channel model (SCM), extended SCM (SCME) [17],
+       [2], [11]. The former is validated by extensive ­measurements     WINNER (WIM1), WINNER II (WIM2) [18], [19], WIN-
+       in [12]–[14], while the latter is calibrated and validated by a   NER+ (WIM+) [20], 3D multiple input and multiple output
+       large number of measurements in [11]. Recently, CloudRT           (MIMO) channel models [21], [22], and QuaDRiGa [23]) and
+       has been updated to a high-performance computing plat-            COST-style (e.g., COST2100 [24])–as well as the geometry-
+       form with the website (http://raytracer.cloud).                   based stochastic models (GBSM) families [25], [26].
+           In order to characterize the 5G mmWave railway chan-              In this study, the four angular spreads are calculated in
+       nels, ray-tracing simulations with two antenna height set-        the usual way [27]. Moreover, when jointly analyzing the
+       ups in the 60 GHz band with 8 GHz bandwidth are made in           angular spreads and the PDP in each scenario, we can see
+       all six modules. The simulations are based on frequency           clearly how the railway objects influence the channel in
+       domain ray-tracing principle for ultra-wideband signal,           both time and angular domains. Generally speaking, (also
+       and the electromagnetic properties of materials are either        can be seen in the particular scenario that is depicted in
+       from measurements or literature. The setup parameters             Fig. 2, ASD and ASA are larger than ESD and ESA, which
+       are shown in Table II. The propagation mechanisms con-            implies that most of the multipath components come from
+       sidered in the simulations are line of sight (LOS), scatter-      the horizontal direction. This truthfully reflects the fact that
+       ing (multiple scattering theory for vegetation and single         more objects (scatterers) are located on the two sides of rail-
+       lobe directive model for others), diffraction (Uniform The-       way rather than over or under the train. Buildings, ground,
+       ory of Diffraction), and reflection.                              billboards, pylons, and vegetation generate effective mul-
+           We define two antenna setups: both the transmitter            tipath components either independently (single reflection,
+       (Tx) and the receiver (Rx) in the setup 1 (6 m and 4.5 m)
+       are higher than those in the setup 2 (1 m and 0.92 m). It is
+                                                                            Table II. Simulation setup.
+       also noteworthy that in this study, we do not need to add
+       directive antennas into the simulation because the ra-              Scenarios                    The Six Modules
+       diation pattern could be included in the post-processing
+                                                                           Antenna type and gain        Omni-directive, 0 dBi
+       to analyze the influence of various antenna patterns or
+       beamforming strategies.                                             Location of Tx and Rx        Tx: pylon, Rx: windshield of train
+           The power delay profile (PDP), root-mean-square (RMS)           Heights of Tx and Rx         Setup 1: 6 m and 4.5 m
+       delay spread, path loss exponent, shadow factor, Ricean K-                                       Setup 2: 1 m and 0.92 m
+       factor, RMS delay spread, and coherence bandwidth were
+                                                                           Mobility model and           Rx moving away from Tx along the
+       analyzed in our previous publication [15]. These chan-
+       nel characteristics show that the objects that are not              speed of the Rx train        track at a constant speed of 500 km/h
+       so relevant to sub-6 GHz channels indeed influence                  System  bandwidth            8 GHz: 60.32 GHz - 68.32 GHz
+       mmWave channels.                                                    Frequency points             801
+           In this study, we move on to the angular domain and
+                                                                           Transmitting power           0 dBm
+       analyze the four angular spreads – azimuth angular spread
+                                                                           Sample interval              2 mm
+       of arrival (ASA) and departure (ASD), elevation angular
+
+
+Authorized licensed use limited to: Univ Politecnica de Madrid. Downloaded on January 20,2025 at 18:48:36 UTC from IEEE Xplore. Restrictions apply.
+                                                 IEEE INTELLIGENT TRANSPORTATION SYSTEMS MAGAZINE • 149 • FALL 2021
+                                                                                                   ously when these multipath compo-
+                                                                                                   nents are presented. As an example
+                                                                                                   shown in Fig. 2, because of the low
+          Apart from the channel character­ization in the complete version                         antenna setup (antenna setup 2 Tx
+          of the modules, another solution is to establish channel models                          and Rx are 1 m and 0.92 m high),
+                                                                                                   the multipath components in the
+          directly based on extensive ray-tracing simu­lations.                                    vertical direction are sparse, and
+                                                                                                   therefore, the ESA and ESD are
+                                                                                                   only around 10° (with occasional
+                                                                                                   jumps caused by sudden appear-
+       scattering, diffraction) or jointly (multiple reflections).        ance of strong multipath components). Also because of the
+       These multipath components are strongly time-variant,              very low antenna heights, more objects in the horizontal
+       and in particular, the angular spreads increase tempestu-          direction – such as train station base, barrier, and moving
+                                                                                                 train – which are insignificant in
+                                                                                                 the high-antenna channel do influ-
+                                              PDP                                                ence the low-antenna channel. On
+                                                                                  –80
+                      Module 3, Antenna Setup 2                   Pylon,                         one hand, their appearance leads
+                                                                Rx Train                         to high ASD and ASA (which gradu-
+                80    Pylon Station                                               –100
+                                       Vegetation                 Pylon,
+                                                                                                 ally decrease when Rx approaches
+                     Base, Rx Train
+                                                                 Barrier,                        Tx); on the other hand, their sudden
+
+
+
+                                                                                                           Received Power (dbm)
+                                       Billboard,                Ground
+                                                                                  –120           absence causes temporal slumps in
+                60
+                                     Station Base                                                ASD as well (see the black circles in
+                                                                                                 Fig. 2). To summarize, through ray-
+                      t (ns)
+
+
+
+
+                        Moving Train,                                             –140           tracing simulations in the proposed
+                40      Station Base                 Pylon, Barrier,
+                                                      Station Base                               six railway scenario modules, all
+                               Moving Train,            LOS Path,                 –160           the fundamental channel charac-
+                              Pylon, Rx Train        Ground, Barrier,                            teristics at mmWave band including
+                20
+                                                     Pylon, Rx Train                             corresponding parameters of the
+                                                                                  –180           path loss exponent, shadow factor,
+                                                                                                 Ricean K-factor, RMS delay spread,
+                 0
+                                                                                  –200           coherence bandwidth, and the four
+                       20 40 60         80 100 120 140 160 180 200                               angular spreads (ASA /ASD/ ESA /
+                                        Snapshot Index                                           ESD), can be obtained and analyzed.
+                                                                                                 These parameters, reflecting the 5G
+               120                                                                               mmWave railway channel features,
+                                                                                                 can be input into various channel
+                                                                                                 models. Similar methods that also
+               100
+                                                                                                 make use of ray-tracing results to
+                                                                                                 parameterize the urban channel in
+            Angular Spread (°)
+
+
+
+
+                80                                                                               the 5G mmWave standard channel
+                                                                                                 models can be found in [28].
+                                           ASA
+                                 60        ESA                                                                                    C. Channel Models in the
+                                           ASD
+                                           ESD
+                                                                                                                                  Concise Version of Scenarios
+                                 40                                                                                               Apart from the channel character-
+                                                                                                                                  ization in the complete version of
+                                                                                                                                  the modules, another solution is to
+                                 20                                                                                               establish channel models directly
+                                                                                                                                  based on extensive ray-tracing simu-
+                                  0                                                                                               lations. In this regard, a good trad-
+                                      20     40   60    80 100 120 140 160 180 200                                                eoff between the accuracy and the
+                                                       Snapshot Index
+                                                                                                                                  conciseness of the environment re-
+       FIG 2 PDP and angular spreads of Module 3 with antenna setup 2. In the bottom figure, the ASA, ASD,                        construction is required. Thus, we
+       ESA, and ESD.                                                                                                              present the concise version of the
+
+
+Authorized licensed use limited to: Univ Politecnica de Madrid. Downloaded on January 20,2025 at 18:48:36 UTC from IEEE Xplore. Restrictions apply.
+                                                         IEEE INTELLIGENT TRANSPORTATION SYSTEMS MAGAZINE • 150 • FALL 2021
+       railway environment model only
+       with the objects which have a sig-
+       nificant contribution to mmWave
+       channels. According to the previ-         A good trad­eoff between the accuracy and the conciseness
+       ous significance analysis conclu-         of the environment re­construction is required.
+       sions in our previous study [12],
+       two concise railway scenarios are
+       reconstructed for the mmWave
+       band. The first scenario is for the outdoor railway en-      1) Stochastic Channel Model Based on Ray-Tracing
+       vironment: when Tx and Rx are lower than the barriers,       in the Concise Outdoor Railway Scenario at 90 GHz
+       the traction pylons, tracks and the objects outside the bar- In the concise outdoor railway scenario, the same self-
+       riers are neglected; while when either Tx or Rx is higher    developed broadband and dynamic channel ray-tracing
+       than the barriers, the objects outside the barriers are re-  simulator that is used in Section II B is employed to do
+       constructed. The second scenario is for tunnels, which is    extensive simulations at center frequency 93.2 GHz with
+       modelled with the train, ground and tunnel walls, omit-      2 GHz bandwidth. Following the 3GPP mmWave HST net-
+       ting tracks and tunnel furniture whose area is smaller       work architecture, the time-varying channel is generated
+       than 7 m 2. The concise versions of the outdoor railway      according to the trackside Tx setting on the remote radio
+       and tunnel scenarios are shown in Fig. 3. Generally speak-   head (RRH) and a mobile relay station on the train in move-
+       ing, compared with the complete version, the number of       ment. The Tx is equipped with a vertically polarized om-
+       surfaces in the concise version decreases from 54.46% up     nidirectional antenna that is 3.2 m above the ground. The
+       to 78.71%. Correspondingly, the ray-tracing simulation       Rx fixed on the train’s front window, 3 m above the ground,
+       time decreases from 69.95% up to 89.90% of that of the       is omnidirectional and vertically polarized. With a sam-
+       completed version.                                           pling interval of 3.6 ms, the Rx moves toward the 580 m
+
+
+
+
+                                   Outdoor Railway Environment                    Outdoor Railway Environment
+                                  When Both Tx and Rx Are Lower                   When Either Tx or Rx Is Higher                            5G mmWave Tunnel Environment
+                                        Than the Barriers                              Than the Barriers
+
+       FIG 3 Concise version of the outdoor railway and tunnel scenarios.
+
+
+
+                                                                                                                                  0.35
+                                       130
+                                                                                                                                                              Measurement
+                                                                                                                                   0.3                        Model
+                                       120
+             Large-Scale Fading (dB)
+
+
+
+
+                                                                                                                                                              Ricean Fitting
+                                                                                                            Probability Density
+
+
+
+
+                                                                                                                                  0.25
+                                       110
+                                                                                                                                   0.2
+                                       100
+                                                                                                                                  0.15
+                                        90                                                                                         0.1
+                                                       Measurement       Model
+                                        80             nmeasure = 1.6, σmeasure = 2.7 dB                                          0.05
+                                                       nmodel = 1.6, σmodel = 2.9 dB
+                                        70                                                                                          0
+                                             0   100       200      300       400          500                                      0.5                1                   1.5
+                                                           Distance (m)                                                                   Small-Scale Fading Amplitude
+
+                                                                                                      FIG 5 Comparison of the PDF of small-scale fading between measurement
+       FIG 4 Comparison of large-scale fading between measurement and model.                          and model.
+
+
+
+Authorized licensed use limited to: Univ Politecnica de Madrid. Downloaded on January 20,2025 at 18:48:36 UTC from IEEE Xplore. Restrictions apply.
+                                                                   IEEE INTELLIGENT TRANSPORTATION SYSTEMS MAGAZINE • 151 • FALL 2021
+                                                                                                 n model); the shadow factor of model
+                                                                                                 and measurement is 2.9 dB v model
+                                                                                                 and 2.7 dB v measure, respectively.
+           The proposed model based on ray-tracing in the concise                                The comparison of the probability
+           outdoor railway scenarios can accurately repro­duce the large-                        density function (PDF) of the am-
+                                                                                                 plitudes of the small-scale fading is
+           scale fading for link budget and the small-scale fading for                           shown in Fig. 5, where the model
+           evaluating and optimizing the transmission schemes enabling                           result matches the measurement
+                                                                                                 well, and it is found that the Ricean
+           smart rail mobility and 5G railway use.                                               distribution can well characterize
+                                                                                                 the amplitude distribution of the
+                                                                                                 small-scale fading due to the pres-
+       distant RRH at a speed of v = 500 km/h. Considering that        ence of the LOS ray in the analyzed scenario.
+       the significant materials in this scenario – concrete, metal,       The overall result of this validation can be summarized
+       tempered glass, resin – are not very frequency dispersive       stating that there are good agreements on the measured
+       between 90 GHz and 100 GHz, we use the standard electro-        and simulated large-scale fading and small-scale fading.
+       magnetic (EM) property of them at 100 GHz given by ITU-R        To summarize, the proposed model based on ray-tracing in
+       [29]. Since the LOS always exists in this scenario, multiple    the concise outdoor railway scenarios can accurately repro-
+       orders of reflected rays and single-bounced scattered rays      duce the large-scale fading for link budget and the small-
+       are traced as multipath components, while diffraction is        scale fading for evaluating and optimizing the transmission
+       not involved. Based on extensive ray-tracing simulations,       schemes enabling smart rail mobility and 5G railway use.
+       a stochastic model is established. By implementing the
+       formulas in [30], the complete channel transfer function        2) Stochastic Channel Model Based on Ray-Tracing
+       (CTF) can be obtained. To validate this stochastic model,       in the Concise Tunnel Scenario at 30 GHz
+       we employ measurements at 90 GHz band in the outdoor            In the concise tunnel scenario, using the same ray-tracing
+       railway environment taken by the Railway Technical Re-          simulator, we conducted simulations at the center frequen-
+       search Institute (RTRI) and the National Institute of In-       cy 30 GHz with 500 MHz bandwidth. With the Rx speed of
+       formation and Communication Technology (NICT) [31].             500 km/h, the total number of snapshots are 500,000 in the
+       In order to separate the large-scale fading and the small-      target straight tunnel. All the details for this model can be
+       scale fading, a sliding/overlapped window with an inter-        seen in [14]. After evaluating the contribution of each propa-
+       val of 10 wavelengths and a window size of 20 wavelengths       gation mechanism, a stochastic channel modeling for T2I
+       for averaging are used for both the model results and the       link is established based on the LOS ray and up to 10th or-
+       measurement data. As shown in Fig. 4, the measurement           der of reflected rays; whereas the other rays (diffraction,
+       and the model have good agreements in terms of the large-       scattering, and higher order reflections) are omitted due to
+       scale fading. The path loss exponent fitted by model and        their insignificant contribution. In order to get full polariza-
+       measurement, respectively, is the same -1.6 (n measure and      tion information, all the four polarization ­combinations are
+                                                                       simulated (vertical-vertical, vertical-horizontal, horizontal-
+                                                                       vertical and horizontal-horizontal). As we did in the outdoor
+              40                                                       model, the validation is carried out using measurements in
+                                                  Measurement          a real scenario. In this case this scenario is a Seoul subway
+              35
+                                                  Model                tunnel between 31.5–31.75 GHz with 250 MHz bandwidth
+              30                                                       (measurements done by ETRI [32]). As can be seen in Fig. 6,
+              25                                                       the comparison of signal-to-noise ratio (SNR) between the
+           SNR (dB)
+
+
+
+
+                                                                       measurements and the stochastic model in the concise tun-
+              20
+                                                                       nel scenario shows a good agreement, not only in terms of
+              15                                                       propagation loss but also regarding fading (the mean error
+              10                                                       of the SNR is smaller than 1 dB and the standard deviation is
+                                                                       smaller than 4 dB).
+                5
+                                                                           To summarize, the above channel models are two case
+                0                                                      studies. They demonstrate how to generate the realistic 5G
+                  0         200          400         600         800
+                                    Distance (m)                       channel models for railway use cases at mmWave band
+                                                                       based on ray-tracing in the concise version of the railway
+       FIG 6 Comparison of SNR between measurement in Seoul subway and environment models. Both the ray-tracing simulator and
+       stochastic model.                                               the railway environment models are open ­             a ccess at
+
+
+Authorized licensed use limited to: Univ Politecnica de Madrid. Downloaded on January 20,2025 at 18:48:36 UTC from IEEE Xplore. Restrictions apply.
+                                                 IEEE INTELLIGENT TRANSPORTATION SYSTEMS MAGAZINE • 152 • FALL 2021
+       http://raytracer.cloud. The interest-
+       ed readers can easily utilize this re-
+       source for free to run simulations and
+       obtain realistic channels in their tar-             The full version of smart rail mobility pro­viding a seamless
+       get scenarios and frequency bands                   high-data-rate connectivity beyond 100 Gbps is expected to be
+       according to their preference.
+                                                           enabled by THz communica­tions between 2025 and 2030.
+       III. Future Directions on Smart
+       Rail Mobility
+       In this section, we draw the road-
+       map and discuss the future directions by defining two ver-                     (like the new angle of arrival estimation algorithms in
+       sions of the smart rail mobility paradigm–the basic version                    [35]), which are more challenging for THz due to the nar-
+       and the full version–in terms of data rate, bandwidth, car-                    rower beam widths. But from a long-term point of view,
+       rier frequency, technical challenges, and implementa-                          THz communications have broader prospects, because
+       tion timeline.                                                                 the very strong distance-frequency dependent character-
+           In the basic version, considering the available band-                      istics of the THz band can motivate the development of
+       widths at mmWave band from 1 GHz (at 28 GHz) to 9 GHz                          novel communication schemes, such as, distance-aware
+       (at 60 GHz), data rates of 1–10 Gbps could be achieved                         multi-carrier modulation (DAMC), hybrid beamforming
+       even with moderate spectral efficiencies. However, con-                        scheme with DAMC transmission, etc. To summarize,
+       sidering adaptive beamforming at mmWave band, if using                         according to the progress on THz communication stan-
+       current beam training protocols involving an exhaustive                        dardization, for instance, IEEE 802.15.3d-2017 and IEEE
+       search or prioritized sector search ordering, challenges                       802.15 IGthz, the full version of smart rail mobility pro-
+       will arise on how to keep the T2I link configuration time                      viding a seamless high-data-rate connectivity beyond
+       within the latency bounds of HD video or VoIP services.                        100 Gbps is expected to be enabled by THz communica-
+       Moreover, novel handover scheme (e.g., efforts in [33]) and                    tions between 2025 and 2030.
+       multi-beam concurrent transmission scheme (such as the
+       heterogeneous multi-beam cloud radio access network ar-                        IV. Conclusion and Future Work
+       chitecture proposed in [34]) will be needed for improving                      In this article, we identify the main challenges and pres-
+       handover performance and providing seamless mobility                           ent a series of work including railway scenario modeling,
+       and coverage for mmWave network. To sum up, referring to                       ray-tracing simulations, and channel modeling, towards
+       the timeline of the standardization of 5G mmWave railway                       ­realistic 5G channel models for railway use cases at
+       communications, e.g., IEEE 802.15 Interest Group HRRC                           mmWave band. We have seen that including railway fea-
+       (Interest Group High Rate Rail Communications), as well                         tures in channel models is a challenging task mostly be-
+       as the 5G standardization in 3GPP and ITU-R, mmWave                             cause there are no channel models focused exclusively on
+       communications are practical to enable the basic version                        railways. A possible solution for this is to use the standard
+       of smart rail mobility in the next five years – 2020–2025.                      railway scenarios for the ray tracer. Regarding this tool,
+           For the full version, taking advantage of the ultra-high                    we have shown the fundamental characteristics of the
+       bandwidths beyond 20 GHz available in the terahertz                             channel at the 60 GHz band that could serve as an input to
+       (THz) frequency range, higher-data-rate transmission                            various standard channel models in mmWave band. Fur-
+       (i.e., beyond 100 Gbps) is possible to achieve. However,                        thermore, based on the ray-tracing simulations in both
+       compared to the mmWave band, the beam width at THz                              the outdoor railway and tunnel scenarios, two stochastic
+       frequencies is much narrower (even 1°) in order to com-                         channel models were established and validated by mea-
+       pensate the higher path-loss. Thus, it is more challeng-                        surements at 90 GHz and 30 GHz bands, respectively. The
+       ing to realize adaptive beamforming in the T2I scenario.                        channel impulse responses generated by these models can
+       But, if we can accurately predict the train location, it is                     be an input to link-level simulators to evaluate the physi-
+       possible to avoid (or at least greatly mitigate) the need of                    cal layer technologies. However, currently there is as yet
+       beam training and then the aforementioned disadvantage                          no widely accepted solution to verify the ray-tracing data
+       of longer link configuration time at THz can be neglected.                      in system-level modeling or to clarify how the propaga-
+       Note that the speed of a train can be time-variant, which                       tion characteristics directly influence the system perfor-
+       will raise challenges to design competent localization al-                      mance. Thus, future efforts should be made to link the
+       gorithms. For inter-car and infrastructure-to-infrastruc-                       propagation channel model with metrics such as path loss,
+       ture scenarios, to overcome the performance loss from                           shadow fading, delay spread, angular spreads, etc., to the
+       aerodynamics-induced beam misalignment, it is still nec-                        system-level metrics, such as Precoding Matrix Indicators
+       essary to develop efficient beam alignment techniques                           (PMI), Channel Quality Information (CQI), and so on.
+
+
+Authorized licensed use limited to: Univ Politecnica de Madrid. Downloaded on January 20,2025 at 18:48:36 UTC from IEEE Xplore. Restrictions apply.
+                                                 IEEE INTELLIGENT TRANSPORTATION SYSTEMS MAGAZINE • 153 • FALL 2021
+          Last but not least, future directions were pointed out                                          Cesar Briso-Rodriguez, received the
+       as well. If the main technical challenges can be well ad-                                          Ph.D. degrees in Telecommunications
+       dressed, the basic version of smart rail mobility enabled by                                       Engineering from Universidad Politec-
+       5G mmWave communications is very promising to come                                                 nica de Madrid (UPM), Spain, in 1999.
+       true by 2025, and a data rate between 1-10 Gbps could be                                           Since 1996, he has been Full Professor
+       expected. Then, in the subsequent 5-10 years, THz com-                                             of the Telecommunication school of
+       munications in the era of beyond 5G (B5G) could be the key                                         the Technical University of Madrid.
+       enabler of the full version of smart rail mobility providing                   His research activities have been focused on design and de-
+       a seamless high-data-rate connectivity beyond 100 Gbps.                        velopment of high frequency communication systems for
+                                                                                      railway. E-mail: cesar.briso@upm.es
+       Acknowledgment
+       This work is supported by the National Key Research and                                             Bile Peng, received the Ph.D. degree
+       Development Program under Grant 2016YFE0200900, Bei-                                                from the Institut fuer Nachrichtentech-
+       jing Natural Science Foundation under Grant L161009,                                                nik, Technische Universitaet Braun-
+       NSFC under Grant (61771036 and 61725101), Fundamental                                               schweig in 2018. He is currently a
+       Research Funds for the Central Universities 2018RC030,                                              Project Assistant with the Chalmers
+       and Alexander von Humboldt Foundation.                                                              University of Technology, Sweden. His
+                                                                                                           research interests include wireless
+       About the Authors                                                              channel measurement, modeling and estimation, high pre-
+                           Ke Guan, received the Ph.D. degree                         cision vehicle localization and mapping, as well as artifi-
+                           from School of Electronic and Informa-                     cial intelligence. E-mail: bile.peng@chalmers.se
+                           tion Engineering of Beijing Jiaotong
+                           University in 2014. He is an Associate                                          Danping He, received the Ph.D. degree
+                           Professor in State Key Laboratory of                                            from Universidad Politecnica de Madrid in
+                           Rail Traffic Control and Safety, Beijing                                        2014. She is currently conducting postdoc-
+                           Jiaotong University. His current re-                                            toral research in the State Key Laboratory
+       search interests are in the field of measurement and mod-                                           of Rail Traffic Control and Safety, Beijing
+       eling of wireless propagation channels for 5G, mmWave,                                              Jiaotong University. She is an Associate
+       THz, and intelligent transportation systems. E-mail:                                                Professor in State Key Laboratory of Rail
+       kguan@bjtu.edu.cn                                                              Traffic Control and Safety, Beijing Jiaotong University. Her cur-
+                                                                                      rent research interests include radio propagation and channel
+                           Juan Moreno, received the Ph.D. de-                        modeling, ray tracing simulator development and wireless com-
+                           gree from the Universidad Politecnica                      munication algorithm design. E-mail: hedanping@bjtu.edu.cn
+                           de Madrid in 2015. He works as a roll-
+                           ing stock engineer in the Engineering                                           Andrej Hrovat, received the Ph.D. de-
+                           and Research Department of Madrid                                               gree in Electrical Engineering from the
+                           Metro and as a part-time professor in                                           Joef Stefan International Postgraduate
+                           the Universidad Politecnica de Madrid.                                          School, Slovenia, in 2011. He is currently
+       His research interests are channel measurement & model-                                             a researcher in the Department of Com-
+       ling, railway communications systems and software-de-                                               munication Systems of the Joef Stefan
+       fined radio. E-mail: juanmorenogl@diac.upm.es                                                       Institute and assistant at the Joef Stefan
+                                                                                      International Postgraduate School. His research interests in-
+                           Bo Ai, received the Ph.D. degree from                      clude radio signal propagation, channel modeling, terrestrial
+                           Xidian University in 2004 in China. He                     and satellite fixed and mobile wireless communications, ra-
+                           is now working in Beijing Jiaotong Uni-                    dio signal measurements and emergency communications.
+                           versity as a professor and advisor of                      E-mail: andrej.hrovat@ijs.si
+                           Ph.D. candidates. He is a deputy direc-
+                           tor of State Key Lab of Rail Traffic Con-                                          Zhangdui Zhong, received the Mas-
+                           trol and Safety. His current interests                                             ter’s degree from Beijing Jiaotong Uni-
+       are the research and applications OFDM techniques, HPA                                                 versity, Beijing, China, in 1988. He is a
+       linearization techniques, radio propagation and channel                                                professor and advisor of Ph.D. candi-
+       modeling, GSM for railway systems, and LTE for railway                                                 dates in Beijing Jiaotong University. He
+       systems. He is an IET Fellow and an IEEE Senior member.                                                is now a Chief Scientist of State Key
+       E-mail: boai@bjtu.edu.cn                                                                               Laboratory of Rail Traffic Control and
+
+
+Authorized licensed use limited to: Univ Politecnica de Madrid. Downloaded on January 20,2025 at 18:48:36 UTC from IEEE Xplore. Restrictions apply.
+                                                 IEEE INTELLIGENT TRANSPORTATION SYSTEMS MAGAZINE • 154 • FALL 2021
+       Safety in Beijing Jiaotong University. His research interests                         [15] K. Guan et al., “Scenario modules, ray-tracing simulations and analy-
+                                                                                                  sis of millimetre wave and terahertz channels for smart rail mobility,”
+       include railway communications, AI, big data, and cloud                                    IET Microw., Antennas Propag., vol. 12, no. 4, pp. 501–508, Mar. 2018.
+       computing. E-mail: zhdzhong@bjtu.edu.cn                                                    doi: 10.1049/iet-map.2017.0591.
+                                                                                             [16] X. Cheng et al., “Communicating in the real world: 3D MIMO,” IEEE
+                                                                                                  Wireless Commun., vol. 21, no. 4, pp. 136–144, Aug. 2014. doi: 10.1109/
+                           Thomas Kürner, received his Dr.-Ing.                                   MWC.2014.6882306.
+                                                                                             [17] D. S. Baum, J. Hansen, and J. Salo, “An interim channel model for be-
+                           degree in 1993 from University of Karl-                                yond-3G systems: Extending the 3GPP spatial channel model (SCM),”
+                           sruhe (Germany). Since 2003 he is Full                                 in Proc. 2005 IEEE 61st Vehicular Technology Conf., vol. 5, pp. 3132–
+                                                                                                  3136. doi: 10.1109/VETECS.2005.1543924.
+                           University Professor for Mobile Radio                             [18] A. Ghazal et al., “A non-stationary IMT-advanced MIMO channel mod-
+                           Systems at the Technische Universitaet                                 el for high-mobility wireless communication systems,” IEEE Trans.
+                                                                                                  Wireless Commun., vol. 16, no. 4, pp. 2057–2068, Apr. 2017. doi: 10.1109/
+                           Braunschweig. His working areas are                                    TWC.2016.2628795.
+                           indoor channel characterization and                               [19] X. Chen, “Throughput multiplexing efficiency for MIMO antenna
+                                                                                                  characterization,” IEEE Antennas Wireless Propag. Lett., vol. 12, pp.
+       system simulations for high-speed short-range systems in-                                  1208–1211, 2013. doi: 10.1109/LAWP.2013.2282952.
+       cluding future terahertz communication system, propaga-                               [20] J. Bian et al., “A WINNER+ based 3D non-stationary wideband MIMO
+                                                                                                  channel model,” IEEE Trans. Wireless Commun., vol. 17, no. 3,
+       tion, traffic and mobility models for automatic planning                                   pp. 1755–1767, Mar. 2018. doi: 10.1109/TWC.2017.2785249.
+       and self-organization of mobile radio networks, car-to-car                            [21] J. Zhang, Y. Zhang, Y. Yu, R. Xu, Q. Zheng, and P. Zhang, “3D MIMO:
+                                                                                                  How much does it meet our expectations observed from channel mea-
+       communications as well as accuracy of satellite navigation                                 surements?” IEEE J. Sel. Areas Commun., vol. 35, no. 8, pp. 1887–1903,
+       systems. E-mail: kuerner@ifn.ing.tu-bs.de                                                  Aug. 2017. doi: 10.1109/JSAC.2017.2710758.
+                                                                                             [22] S. Wu, C. Wang, e. M. Aggoune, M. M. Alwakeel, and X. You, “A general 3-D
+                                                                                                  non-stationary 5G wireless channel model,” IEEE Trans. Commun., vol.
+       References                                                                                 66, no. 7, pp. 3065–3078, July 2018. doi: 10.1109/TCOMM.2017.2779128.
+       [1] “Shift2Rail: Driving innovation on railways,” European Commission,                [23] S. Jaeckel, L. Raschkowski, K. Börner, and L. Thiele, “QuaDRiGa: A
+            Tech. Rep., 2014. [Online]. Available: http://www.shift2rail.org                      3-D multi-cell channel model with time evolution for enabling virtual
+       [2] K. Guan et al., “On millimeter wave and THz mobile radio channel for                   field trials,” IEEE Trans. Antennas Propag., vol. 62, no. 6, pp. 3242–
+            smart rail mobility,” IEEE Trans. Veh. Technol., vol. 66, no. 7, pp. 5658–            3256, June 2014. doi: 10.1109/TAP.2014.2310220.
+            5674, 2016. doi: 10.1109/TVT.2016.2624504.                                       [24] M. Zhu, G. Eriksson, and F. Tufvesson, “The COST 2100 channel
+       [3] M. Xiao et al., “Millimeter wave communications for future mobile                      model: Parameterization and validation based on outdoor MIMO mea-
+            networks,” IEEE J. Sel. Areas Commun., vol. 35, no. 9, pp. 1909–1935,                 surements at 300 MHz,” IEEE Trans. Wireless Commun., vol. 12, no. 2,
+            Sept. 2017. doi: 10.1109/JSAC.2017.2719924.                                           pp. 888–897, Feb. 2013. doi: 10.1109/TWC.2013.010413.120620.
+       [4] S. Mumtaz, J. M. Jornet, J. Aulin, W. H. Gerstacker, X. Dong, and B. Ai, “Tera-   [25] “Guidelines for evaluation of radio interface technologies for IMT-
+            hertz communication for vehicular networks,” IEEE Trans. Veh. Technol.,               Advanced,” Tech. Rep. ITU-R M.2135, 2008.
+            vol. 66, no. 7, pp. 5617–5625, July 2017. doi: 10.1109/TVT.2017.2712878.         [26] X. Cheng, C.-X. Wang, B. Ai, and H. Aggoune, “Envelope level cross-
+       [5] T. S. Rappaport, Y. Xing, G. R. MacCartney, A. F. Molisch, E. Mellios,                 ing rate and average fade duration of non-isotropic vehicle-to-vehicle
+            and J. Zhang, “Overview of millimeter wave communications for fifth-                  Ricean fading channels,” IEEE Trans. Intell. Transp. Syst., vol. 15,
+            generation (5G) wireless networks: With a focus on propagation mod-                   no. 1, pp. 62–72, Feb. 2014. doi: 10.1109/TITS.2013.2274618.
+            els,” IEEE Trans. Antennas Propag., vol. 65, no. 12, pp. 6213–6230, Dec.         [27] T. S. Rappaport, R. W. Heath Jr., R. C. Daniels, and J. N. Murdock, Milli-
+            2017. doi: 10.1109/TAP.2017.2734243.                                                  meter Wave Wireless Communications. Englewood Cliffs, NJ: Prentice
+       [6] J. Moreno, J. Riera, L. De Haro, and C. Rodriguez, “A survey on future                 Hall, 2014.
+            railway radio communications services: Challenges and opportuni-                 [28] S. Hur et al., “Proposal on millimeter-wave channel modeling for 5G
+            ties,” IEEE Commun. Mag., vol. 53, no. 10, pp. 62–68, Oct. 2015. doi:                 cellular system,” IEEE J. Sel. Topics Signal Process., vol. 10, no. 3,
+            10.1109/MCOM.2015.7295465.                                                            pp. 454–469, Apr. 2016. doi: 10.1109/JSTSP.2016.2527364.
+       [7] K. Guan, D. He, A. Hrovat, B. Ai, Z. Zhong, and T. Kürner, “Challenges and        [29] P. Series, “Propagation data and prediction methods for the planning
+            chances for smart rail mobility at mmWave and THz bands from the chan-                of indoor radiocommunication systems and radio local area networks
+            nels viewpoint,” in Proc. 15th Int. Conf. Intelligent Transport Systems (ITS)         in the frequency range 900 MHz to 100 GHz,” ITU-R, Geneva, Tech.
+            Telecommunications, May 2017, pp. 1–5. doi: 10.1109/ITST.2017.7972207.                Rep. ITU-R P.1238-7, Feb. 2012.
+       [8] P. Kyösti et al., “WINNER II channel models,” D1.1.2 V1.1, 2007.                  [30] J. Y. Yang et al., “A geometry-based stochastic channel model for the
+       [9] D. He, B. Ai, K. Guan, L. Wang, Z. Zhong, and T. Kürner, “The design                   millimeter-wave band in a 3GPP high-speed train scenario,” IEEE
+            and applications of high-performance ray-tracing simulation platform                  Trans. Veh. Technol., vol. 67, no. 5, pp. 3853–3865, Jan. 2017. doi: 10.1109/
+            for 5G and beyond wireless communications: A tutorial,” IEEE Com-                     TVT.2018.2795385.
+            mun. Surveys Tuts., to be published.                                             [31] T. Kawanishi et al., “Proposal of a new working document of a draft
+       [10] K. Guan, Z. Zhong, B. Ai, and T. Kürner, “Deterministic propagation                   new apt report on millimeter-wave band railway radiocommunication
+            modeling for the realistic high-speed railway environment,” in Proc.                  systems between train and trackside, and its work plan,” National Inst.
+            2013 IEEE 77th Vehicular Technology Conf. (VTC Spring), Dresden,                      of Information and Communication Technol., Japan, Tech. Rep. AWG-
+            Germany, pp. 1–5. doi: 10.1109/VTCSpring.2013.6692506.                                20/INP-43, Sept. 2016.
+       [11] S. Priebe and T. Kürner, “Stochastic modeling of THz indoor radio                [32] S. W. Choi et al., “Performance evaluation of millimeter-wave-based
+            channels,” IEEE Trans. Wireless Commun., vol. 12, no. 9, pp. 4445–                    communication system in tunnels,” in Proc. 2015 IEEE Globecom Work-
+            4455, Sept. 2013. doi: 10.1109/TWC.2013.072313.121581.                                shops (GC Wkshps), pp. 1–5. doi: 10.1109/GLOCOMW.2015.7414003.
+       [12] K. Guan et al., “Towards realistic high-speed train channels at 5G               [33] J. Kim, H. S. Chung, S. W. Choi, I. G. Kim, and Y. Han, “Mobile hotspot
+            millimeter-wave band – part I: Paradigm, significance analysis, and                   network enhancement system for high-speed railway communica-
+            scenario reconstruction,” IEEE Trans. Veh. Technol., vol. 67, no. 10,                 tion,” in Proc. 2017 11th European Conf. Antennas and Propagation
+            pp. 9129–9144, Aug. 2018. doi: 10.1109/TVT.2018.2865498.                              (EUCAP), pp. 2885–2889. doi: 10.23919/EuCAP.2017.7928212.
+       [13] T. Abbas, J. Nuckelt, T. Kürner, T. Zemen, C. F. Mecklenbrauker, and             [34] Y. Liu, X. Fang, M. Xiao, and S. Mumtaz, “Decentralized beam pair se-
+            F. Tufvesson, “Simulation and measurement-based vehicle-to-vehicle                    lection in multi-beam millimeter-wave networks,” IEEE Trans. Com-
+            channel characterization: Accuracy and constraint analysis,” IEEE                     mun., vol. 66, no. 6, pp. 2722–2737, June 2018. doi: 10.1109/TCOMM.2018
+            Trans. Antennas Propag., vol. 63, no. 7, pp. 3208–3218, 2015. doi:                    .2800756.
+            10.1109/TAP.2015.2428280.                                                        [35] B. Peng and T. Kürner, “Three-dimensional angle of arrival estima-
+       [14] K. Guan et al., “Towards realistic high-speed train channels at 5G mil-               tion in dynamic indoor terahertz channels using a forward-backward
+            limeter-wave band – part II: Case study for paradigm implementation,”                 algorithm,” IEEE Trans. Veh. Technol., vol. 66, no. 5, pp. 3798–3811,
+            IEEE Trans. Veh. Technol., vol. 67, no. 10, pp. 9129–9144, Aug. 2018. doi:            May 2017.
+            10.1109/TVT.2018.2865530.                                                        
+
+
+
+
+Authorized licensed use limited to: Univ Politecnica de Madrid. Downloaded on January 20,2025 at 18:48:36 UTC from IEEE Xplore. Restrictions apply.
+                                                      IEEE INTELLIGENT TRANSPORTATION SYSTEMS MAGAZINE • 155 • FALL 2021
+
